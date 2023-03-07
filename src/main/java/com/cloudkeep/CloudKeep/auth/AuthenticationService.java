@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,11 @@ public class AuthenticationService {
 //    @Value("${mailjet.apisecret}")
 //    private String mailjetApiSecret;
     public AuthenticationResponse register(RegisterRequest request) throws MailjetException {
+        if(userRepository.findByUsername(request.getUsername()).isPresent()){
+            throw new IllegalStateException("Username is already taken");
+        } else if(userRepository.findByEmail(request.getEmail()).isPresent()){
+            throw new IllegalStateException("Email is already taken");
+        }
         var user = User.builder()
                 .email(request.getEmail())
                 .username(request.getUsername())
@@ -73,11 +79,15 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse login(LoginRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        var user = userRepository.findByUsername(request.getUsername()).orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+            var user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+            var jwtToken = jwtService.generateToken(user);
+            return AuthenticationResponse.builder()
+                    .token(jwtToken)
+                    .build();
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid username or password");
+        }
     }
 }
