@@ -25,15 +25,16 @@ public class AuthenticationController {
 
     private final AuthenticationService service;
 
-    @PostMapping("/hello")
-    public ResponseEntity<?> hello() throws IOException {
-        Cloudinary cloudinary = Singleton.getCloudinary();
-        Map uploadResults = cloudinary.uploader().upload(
-                "https://img.freepik.com/free-photo/wide-angle-shot-single-tree-growing-clouded-sky-during-sunset-surrounded-by-grass_181624-22807.jpg",
-                ObjectUtils.emptyMap());
-        System.out.println(uploadResults.get("secure_url"));
-        return ResponseEntity.ok("Hello");
-    }
+    // JUST CLOUDINARY TEST
+//    @PostMapping("/hello")
+//    public ResponseEntity<?> hello() throws IOException {
+//        Cloudinary cloudinary = Singleton.getCloudinary();
+//        Map uploadResults = cloudinary.uploader().upload(
+//                "https://img.freepik.com/free-photo/wide-angle-shot-single-tree-growing-clouded-sky-during-sunset-surrounded-by-grass_181624-22807.jpg",
+//                ObjectUtils.asMap("folder", "cloudkeep"));
+//        System.out.println(uploadResults.get("secure_url"));
+//        return ResponseEntity.ok("Hello");
+//    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
