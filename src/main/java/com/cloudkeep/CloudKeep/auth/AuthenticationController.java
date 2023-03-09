@@ -1,17 +1,21 @@
 package com.cloudkeep.CloudKeep.auth;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.Singleton;
+import com.cloudinary.utils.ObjectUtils;
 import com.cloudkeep.CloudKeep.ErrorResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -20,6 +24,16 @@ import java.util.List;
 public class AuthenticationController {
 
     private final AuthenticationService service;
+
+    @PostMapping("/hello")
+    public ResponseEntity<?> hello() throws IOException {
+        Cloudinary cloudinary = Singleton.getCloudinary();
+        Map uploadResults = cloudinary.uploader().upload(
+                "https://img.freepik.com/free-photo/wide-angle-shot-single-tree-growing-clouded-sky-during-sunset-surrounded-by-grass_181624-22807.jpg",
+                ObjectUtils.emptyMap());
+        System.out.println(uploadResults.get("secure_url"));
+        return ResponseEntity.ok("Hello");
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
