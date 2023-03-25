@@ -23,6 +23,8 @@ public class Directory {
             strategy = GenerationType.SEQUENCE,
             generator = "directory_sequence")
     private Long id;
+
+    @Column(nullable = false, length = 30)
     private String name;
 
     @ManyToOne(

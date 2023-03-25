@@ -1,5 +1,7 @@
 package com.cloudkeep.CloudKeep.user;
 
+import com.cloudkeep.CloudKeep.directory.Directory;
+import com.cloudkeep.CloudKeep.file.File;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +22,7 @@ import java.util.List;
 @Table(name = "users",
     uniqueConstraints = {
         @UniqueConstraint(name = "email_unique", columnNames = "email"),
-        @UniqueConstraint(name = "username_unque", columnNames = "username")
+        @UniqueConstraint(name = "username_unique", columnNames = "username")
     }
 )
 public class User implements UserDetails {
@@ -46,6 +48,16 @@ public class User implements UserDetails {
     private String profilePicture;
 
     private Boolean verified;
+
+    @OneToMany(
+            mappedBy = "owner"
+    )
+    private List<Directory> directories;
+
+    @OneToMany(
+            mappedBy = "owner"
+    )
+    private List<File> files;
 
 
     @Override

@@ -1,9 +1,8 @@
 package com.cloudkeep.CloudKeep.auth;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.Singleton;
-import com.cloudinary.utils.ObjectUtils;
 import com.cloudkeep.CloudKeep.ErrorResponse;
+import com.cloudkeep.CloudKeep.verification.VerificationRequest;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,9 +12,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 
 @RestController
@@ -54,6 +51,17 @@ public class AuthenticationController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             AuthenticationResponse response = service.login(request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@Valid @RequestBody VerificationRequest request) {
+        try {
+            AuthenticationResponse response = service.verifyEmail(request);
             return ResponseEntity.ok(response);
         } catch (IllegalStateException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());

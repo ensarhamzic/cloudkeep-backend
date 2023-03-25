@@ -2,7 +2,11 @@ package com.cloudkeep.CloudKeep.auth;
 
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.user.User;
+import com.cloudkeep.CloudKeep.user.UserMapper;
 import com.cloudkeep.CloudKeep.user.UserRepository;
+import com.cloudkeep.CloudKeep.verification.Verification;
+import com.cloudkeep.CloudKeep.verification.VerificationRepository;
+import com.cloudkeep.CloudKeep.verification.VerificationRequest;
 import com.mailjet.client.ClientOptions;
 import com.mailjet.client.MailjetClient;
 import com.mailjet.client.errors.MailjetException;
@@ -10,28 +14,39 @@ import com.mailjet.client.transactional.SendContact;
 import com.mailjet.client.transactional.SendEmailsRequest;
 import com.mailjet.client.transactional.TrackOpens;
 import com.mailjet.client.transactional.TransactionalEmail;
-import com.mailjet.client.transactional.response.SendEmailsResponse;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthenticationService {
+    @PersistenceContext
+    private EntityManager entityManager;
     private final UserRepository userRepository;
+    private final VerificationRepository verificationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-//    @Value("${mailjet.apikey}")
-//    private String mailjetApiKey;
-//
-//    @Value("${mailjet.apisecret}")
-//    private String mailjetApiSecret;
+    @Value("${mailjet.apikey}")
+    private String mailjetApiKey;
+
+    @Value("${mailjet.apisecret}")
+    private String mailjetApiSecret;
     public AuthenticationResponse register(RegisterRequest request) throws MailjetException {
         if(userRepository.findByUsername(request.getUsername()).isPresent()){
             throw new IllegalStateException("Username is already taken");
@@ -47,34 +62,40 @@ public class AuthenticationService {
                 .verified(false)
                 .build();
         userRepository.save(user);
+
+        var rand = new SecureRandom();
+        StringBuilder code = new StringBuilder();
+        for (int i = 0; i < 6; i++)
+            code.append(rand.nextInt(10));
+        var verification = Verification.builder()
+                .user(user)
+                .code(code.toString())
+                .build();
+        verificationRepository.save(verification);
         var jwtToken = jwtService.generateToken(user);
 
+        ClientOptions options = ClientOptions.builder()
+                .apiKey(mailjetApiKey)
+                .apiSecretKey(mailjetApiSecret)
+                .build();
 
-//        ClientOptions options = ClientOptions.builder()
-//                .apiKey(mailjetApiKey)
-//                .apiSecretKey(mailjetApiSecret)
-//                .build();
-//
-//        MailjetClient client = new MailjetClient(options);
-//
-//        TransactionalEmail email = TransactionalEmail
-//                .builder()
-//                .to(new SendContact("ensarhamzic2001@gmail.com", "stanislav"))
-//                .from(new SendContact("ensarhamzic01@gmail.com", "Mailjet integration test"))
-//                .htmlPart("<h1>This is the HTML content of the mail</h1>")
-//                .subject("This is the subject")
-//                .trackOpens(TrackOpens.ENABLED)
-//                .header("test-header-key", "test-value")
-//                .customID("custom-id-value")
-//                .build();
-//
-//
-//        SendEmailsRequest emailRequest = SendEmailsRequest.builder().message(email).build();
-//
-//        SendEmailsResponse emailResponse = emailRequest.sendWith(client);
+        MailjetClient client = new MailjetClient(options);
+
+        TransactionalEmail email = TransactionalEmail
+                .builder()
+                .to(new SendContact(user.getEmail(), String.format("%s %s", user.getFirstName(), user.getLastName())))
+                .from(new SendContact("ensarhamzic01@gmail.com", "CloudKeep Team"))
+                .htmlPart("<h1>Please enter the code in your app</h1><p>Your code: " + code + "</p>")
+                .subject("Email verification")
+                .trackOpens(TrackOpens.ENABLED)
+                .build();
+
+        SendEmailsRequest emailRequest = SendEmailsRequest.builder().message(email).build();
+        emailRequest.sendWith(client);
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .user(UserMapper.toDto(user))
                 .build();
     }
 
@@ -85,9 +106,35 @@ public class AuthenticationService {
             var jwtToken = jwtService.generateToken(user);
             return AuthenticationResponse.builder()
                     .token(jwtToken)
+                    .user(UserMapper.toDto(user))
                     .build();
         } catch (Exception e) {
             throw new IllegalStateException("Invalid username or password");
         }
+    }
+    public AuthenticationResponse verifyEmail(VerificationRequest request) {
+        var verificationOptional = verificationRepository.findByCodeAndUserEmail(request.getCode(), request.getEmail());
+        if(!verificationOptional.isPresent())
+            throw new IllegalStateException("Invalid code");
+        var verification = verificationOptional.get();
+        var user = verification.getUser();
+        var now = LocalDateTime.now();
+        var oneDayAgo = now.minusDays(1);
+        long minutesDifference = ChronoUnit.MINUTES.between(verification.getCreatedAt(), LocalDateTime.now());
+        if(minutesDifference > 15)
+            throw new IllegalStateException("Code expired");
+
+        entityManager.createQuery("DELETE FROM Verification t WHERE t.createdAt < :dayAgo")
+                .setParameter("dayAgo", oneDayAgo)
+                .executeUpdate();
+
+        user.setVerified(true);
+        userRepository.save(user);
+        verificationRepository.delete(verification);
+        var jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .user(UserMapper.toDto(user))
+                .build();
     }
 }
