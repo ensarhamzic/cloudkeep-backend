@@ -63,35 +63,9 @@ public class AuthenticationService {
                 .build();
         userRepository.save(user);
 
-        var rand = new SecureRandom();
-        StringBuilder code = new StringBuilder();
-        for (int i = 0; i < 6; i++)
-            code.append(rand.nextInt(10));
-        var verification = Verification.builder()
-                .user(user)
-                .code(code.toString())
-                .build();
-        verificationRepository.save(verification);
+        sendVerificationEmail(user);
+
         var jwtToken = jwtService.generateToken(user);
-
-        ClientOptions options = ClientOptions.builder()
-                .apiKey(mailjetApiKey)
-                .apiSecretKey(mailjetApiSecret)
-                .build();
-
-        MailjetClient client = new MailjetClient(options);
-
-        TransactionalEmail email = TransactionalEmail
-                .builder()
-                .to(new SendContact(user.getEmail(), String.format("%s %s", user.getFirstName(), user.getLastName())))
-                .from(new SendContact("ensarhamzic01@gmail.com", "CloudKeep Team"))
-                .htmlPart("<h1>Please enter the code in your app</h1><p>Your code: " + code + "</p>")
-                .subject("Email verification")
-                .trackOpens(TrackOpens.ENABLED)
-                .build();
-
-        SendEmailsRequest emailRequest = SendEmailsRequest.builder().message(email).build();
-        emailRequest.sendWith(client);
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -104,6 +78,9 @@ public class AuthenticationService {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             var user = userRepository.findByUsername(request.getUsername()).orElseThrow();
             var jwtToken = jwtService.generateToken(user);
+            if(!user.getVerified())
+                sendVerificationEmail(user);
+
             return AuthenticationResponse.builder()
                     .token(jwtToken)
                     .user(UserMapper.toDto(user))
@@ -136,5 +113,37 @@ public class AuthenticationService {
                 .token(jwtToken)
                 .user(UserMapper.toDto(user))
                 .build();
+    }
+
+    @Transactional
+    private void sendVerificationEmail(User user) throws MailjetException {
+        var rand = new SecureRandom();
+        StringBuilder code = new StringBuilder();
+        for (int i = 0; i < 6; i++)
+            code.append(rand.nextInt(10));
+        var verification = Verification.builder()
+                .user(user)
+                .code(code.toString())
+                .build();
+        verificationRepository.save(verification);
+
+        ClientOptions options = ClientOptions.builder()
+                .apiKey(mailjetApiKey)
+                .apiSecretKey(mailjetApiSecret)
+                .build();
+
+        MailjetClient client = new MailjetClient(options);
+
+        TransactionalEmail email = TransactionalEmail
+                .builder()
+                .to(new SendContact(user.getEmail(), String.format("%s %s", user.getFirstName(), user.getLastName())))
+                .from(new SendContact("ensarhamzic01@gmail.com", "CloudKeep Team"))
+                .htmlPart("<h1>Please enter the code in your app</h1><p>Your code: " + code + "</p>")
+                .subject("Email verification")
+                .trackOpens(TrackOpens.ENABLED)
+                .build();
+
+        SendEmailsRequest emailRequest = SendEmailsRequest.builder().message(email).build();
+        emailRequest.sendWith(client);
     }
 }

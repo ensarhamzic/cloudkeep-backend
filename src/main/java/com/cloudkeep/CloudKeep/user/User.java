@@ -2,6 +2,7 @@ package com.cloudkeep.CloudKeep.user;
 
 import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.file.File;
+import com.cloudkeep.CloudKeep.verification.Verification;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,14 +51,23 @@ public class User implements UserDetails {
     private Boolean verified;
 
     @OneToMany(
-            mappedBy = "owner"
+            mappedBy = "owner",
+            cascade = CascadeType.ALL
     )
     private List<Directory> directories;
 
     @OneToMany(
-            mappedBy = "owner"
+            mappedBy = "owner",
+            cascade = CascadeType.ALL
     )
     private List<File> files;
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Verification> verifications;
 
 
     @Override

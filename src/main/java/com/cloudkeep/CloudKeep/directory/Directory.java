@@ -37,7 +37,8 @@ public class Directory {
     private Directory parentDirectory;
 
     @OneToMany(
-            mappedBy = "parentDirectory"
+            mappedBy = "parentDirectory",
+            cascade = CascadeType.ALL
     )
     private List<Directory> subDirectories;
     @ManyToOne(

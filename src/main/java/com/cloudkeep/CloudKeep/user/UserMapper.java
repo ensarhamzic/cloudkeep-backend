@@ -9,6 +9,7 @@ public class UserMapper {
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .profilePicture(user.getProfilePicture())
+                .verified(user.getVerified())
                 .build();
     }
 }

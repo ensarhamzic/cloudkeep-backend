@@ -28,7 +28,10 @@ public class Verification {
     private Long id;
     private String code;
 
-    @ManyToOne()
+    @ManyToOne(
+            optional = false,
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(
             name = "user_id",
             referencedColumnName = "id"

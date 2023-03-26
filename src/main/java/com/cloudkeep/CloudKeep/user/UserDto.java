@@ -20,4 +20,5 @@ public class UserDto {
     public String email;
     public String username;
     public String profilePicture;
+    public Boolean verified;
 }
