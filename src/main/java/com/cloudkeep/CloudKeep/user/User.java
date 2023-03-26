@@ -51,21 +51,17 @@ public class User implements UserDetails {
     private Boolean verified;
 
     @OneToMany(
-            mappedBy = "owner",
-            cascade = CascadeType.ALL
+            mappedBy = "owner"
     )
     private List<Directory> directories;
 
     @OneToMany(
-            mappedBy = "owner",
-            cascade = CascadeType.ALL
+            mappedBy = "owner"
     )
     private List<File> files;
 
     @OneToMany(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            mappedBy = "user"
     )
     private List<Verification> verifications;
 
