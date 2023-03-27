@@ -1,4 +1,4 @@
-package com.cloudkeep.CloudKeep.auth;
+package com.cloudkeep.CloudKeep.auth.requests;
 
 import com.cloudkeep.CloudKeep.annotation.FieldMatch;
 import jakarta.validation.constraints.Email;

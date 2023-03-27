@@ -1,12 +1,14 @@
 package com.cloudkeep.CloudKeep.auth;
 
+import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
+import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.user.User;
 import com.cloudkeep.CloudKeep.user.UserMapper;
 import com.cloudkeep.CloudKeep.user.UserRepository;
 import com.cloudkeep.CloudKeep.verification.Verification;
 import com.cloudkeep.CloudKeep.verification.VerificationRepository;
-import com.cloudkeep.CloudKeep.verification.VerificationRequest;
+import com.cloudkeep.CloudKeep.verification.requests.VerificationRequest;
 import com.mailjet.client.ClientOptions;
 import com.mailjet.client.MailjetClient;
 import com.mailjet.client.errors.MailjetException;
@@ -25,10 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
