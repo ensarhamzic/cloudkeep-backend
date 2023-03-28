@@ -23,6 +23,17 @@ public class DirectoryController {
     private final DirectoryService directoryService;
     private final JwtService jwtService;
 
+    @GetMapping
+    public ResponseEntity<?> getDirectories(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        try {
+            Long userId = jwtService.extractId(authHeader);
+            return ResponseEntity.ok(directoryService.getDirectories(userId));
+        } catch (IllegalStateException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> createDirectory(
             @Valid @RequestBody CreateDirectoryRequest request,

@@ -3,11 +3,9 @@ package com.cloudkeep.CloudKeep.user;
 import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.file.File;
 import com.cloudkeep.CloudKeep.verification.Verification;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -51,7 +50,8 @@ public class User implements UserDetails {
     private Boolean verified;
 
     @OneToMany(
-            mappedBy = "owner"
+            mappedBy = "owner",
+            fetch = FetchType.LAZY
     )
     private List<Directory> directories;
 

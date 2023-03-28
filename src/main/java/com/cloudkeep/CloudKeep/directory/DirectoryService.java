@@ -6,6 +6,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,5 +30,9 @@ public class DirectoryService {
         directory.setParentDirectory(parentDir);
         directoryRepository.save(directory);
         return "Directory created";
+    }
+
+    public List<Object> getDirectories(Long userId) {
+        return directoryRepository.findAllByOwner_Id(userId);
     }
 }

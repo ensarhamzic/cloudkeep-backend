@@ -1,16 +1,19 @@
 package com.cloudkeep.CloudKeep.directory;
 
+import com.cloudkeep.CloudKeep.file.File;
 import com.cloudkeep.CloudKeep.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.util.List;
 
 @Entity
 @Table(name = "directories")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Directory {
@@ -34,6 +37,7 @@ public class Directory {
             name = "parent_directory_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private Directory parentDirectory;
 
     @OneToMany(
@@ -41,6 +45,13 @@ public class Directory {
             cascade = CascadeType.ALL
     )
     private List<Directory> subDirectories;
+
+    @OneToMany(
+            mappedBy = "directory",
+            cascade = CascadeType.ALL
+    )
+    private List<File> files;
+
     @ManyToOne(
             optional = false,
             cascade = CascadeType.ALL
@@ -49,6 +60,7 @@ public class Directory {
             name = "owner_id",
             referencedColumnName = "id"
     )
+    @JsonIgnore
     private User owner;
 
 }
