@@ -1,6 +1,7 @@
 package com.cloudkeep.CloudKeep.directory;
 
 import com.cloudkeep.CloudKeep.directory.requests.CreateDirectoryRequest;
+import com.cloudkeep.CloudKeep.directory.responses.CreateDirectoryResponse;
 import com.cloudkeep.CloudKeep.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.List;
 public class DirectoryService {
     private final DirectoryRepository directoryRepository;
     private final UserRepository userRepository;
-    public String createDirectory(CreateDirectoryRequest request, Long userId) {
+    public CreateDirectoryResponse createDirectory(CreateDirectoryRequest request, Long userId) {
         var user = userRepository.findById(userId).orElseThrow();
         Directory parentDir = null;
         if(request.getParentId() != null) {
@@ -29,10 +30,14 @@ public class DirectoryService {
         directory.setOwner(user);
         directory.setParentDirectory(parentDir);
         directoryRepository.save(directory);
-        return "Directory created";
+
+        return CreateDirectoryResponse.builder()
+                .message("Directory created successfully")
+                .data(directory)
+                .build();
     }
 
-    public List<Object> getDirectories(Long userId) {
+    public List<Directory> getDirectories(Long userId) {
         return directoryRepository.findAllByOwner_Id(userId);
     }
 }
