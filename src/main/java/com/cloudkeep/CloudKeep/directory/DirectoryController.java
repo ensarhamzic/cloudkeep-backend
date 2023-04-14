@@ -24,10 +24,11 @@ public class DirectoryController {
     private final JwtService jwtService;
 
     @GetMapping
-    public ResponseEntity<?> getDirectories(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+    public ResponseEntity<?> getDirectories(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+                                            @RequestParam(required = false) Long directoryId) {
         try {
             Long userId = jwtService.extractId(authHeader);
-            return ResponseEntity.ok(directoryService.getDirectories(userId));
+            return ResponseEntity.ok(directoryService.getDirectories(userId, directoryId));
         } catch (IllegalStateException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);

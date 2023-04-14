@@ -37,7 +37,8 @@ public class DirectoryService {
                 .build();
     }
 
-    public List<Directory> getDirectories(Long userId) {
-        return directoryRepository.findAllByOwner_Id(userId);
+    public List<Directory> getDirectories(Long userId, Long directoryId) {
+        var dirs = directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId);
+        return dirs;
     }
 }

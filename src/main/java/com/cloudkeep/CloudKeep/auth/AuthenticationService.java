@@ -4,7 +4,7 @@ import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
 import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.user.User;
-import com.cloudkeep.CloudKeep.user.UserMapper;
+import com.cloudkeep.CloudKeep.user.UserDTOMapper;
 import com.cloudkeep.CloudKeep.user.UserRepository;
 import com.cloudkeep.CloudKeep.verification.Verification;
 import com.cloudkeep.CloudKeep.verification.VerificationRepository;
@@ -41,6 +41,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserDTOMapper userDTOMapper;
 
     @Value("${mailjet.apikey}")
     private String mailjetApiKey;
@@ -69,7 +70,7 @@ public class AuthenticationService {
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
-                .user(UserMapper.toDto(user))
+                .user(userDTOMapper.apply(user))
                 .build();
     }
 
@@ -83,7 +84,7 @@ public class AuthenticationService {
 
             return AuthenticationResponse.builder()
                     .token(jwtToken)
-                    .user(UserMapper.toDto(user))
+                    .user(userDTOMapper.apply(user))
                     .build();
         } catch (Exception e) {
             throw new IllegalStateException("Invalid username or password");
@@ -111,7 +112,7 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
-                .user(UserMapper.toDto(user))
+                .user(userDTOMapper.apply(user))
                 .build();
     }
 
