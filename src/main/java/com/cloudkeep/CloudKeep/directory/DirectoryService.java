@@ -7,8 +7,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -16,12 +16,13 @@ import java.util.List;
 public class DirectoryService {
     private final DirectoryRepository directoryRepository;
     private final UserRepository userRepository;
+    private final DirectoryDTOMapper directoryDTOMapper;
     public CreateDirectoryResponse createDirectory(CreateDirectoryRequest request, Long userId) {
         var user = userRepository.findById(userId).orElseThrow();
         Directory parentDir = null;
         if(request.getParentId() != null) {
             parentDir = directoryRepository.findById(request.getParentId()).orElseThrow();
-            if(parentDir.getOwner().getId() != userId) {
+            if(!Objects.equals(parentDir.getOwner().getId(), userId)) {
                 throw new IllegalStateException("You can't create a directory in a directory that doesn't belong to you");
             }
         }
@@ -37,8 +38,7 @@ public class DirectoryService {
                 .build();
     }
 
-    public List<Directory> getDirectories(Long userId, Long directoryId) {
-        var dirs = directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId);
-        return dirs;
+    public List<DirectoryDTO> getDirectories(Long userId, Long directoryId) {
+        return directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId).stream().map(directoryDTOMapper).toList();
     }
 }

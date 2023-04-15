@@ -1,7 +1,6 @@
 package com.cloudkeep.CloudKeep.directory;
 
 import com.cloudkeep.CloudKeep.ErrorResponse;
-import com.cloudkeep.CloudKeep.auth.AuthenticationResponse;
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.directory.requests.CreateDirectoryRequest;
 import jakarta.validation.Valid;
@@ -24,8 +23,10 @@ public class DirectoryController {
     private final JwtService jwtService;
 
     @GetMapping
-    public ResponseEntity<?> getDirectories(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
-                                            @RequestParam(required = false) Long directoryId) {
+    public ResponseEntity<?> getDirectories(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestParam(required = false) Long directoryId
+    ) {
         try {
             Long userId = jwtService.extractId(authHeader);
             return ResponseEntity.ok(directoryService.getDirectories(userId, directoryId));

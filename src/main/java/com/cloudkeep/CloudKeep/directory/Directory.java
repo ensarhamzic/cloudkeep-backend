@@ -2,7 +2,6 @@ package com.cloudkeep.CloudKeep.directory;
 
 import com.cloudkeep.CloudKeep.file.File;
 import com.cloudkeep.CloudKeep.user.User;
-import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,21 +34,18 @@ public class Directory {
             name = "parent_directory_id",
             referencedColumnName = "id"
     )
-    @JsonIgnore
     private Directory parentDirectory;
 
     @OneToMany(
             mappedBy = "parentDirectory",
             cascade = CascadeType.ALL
     )
-    @JsonIgnore
     private List<Directory> subDirectories;
 
     @OneToMany(
             mappedBy = "directory",
             cascade = CascadeType.ALL
     )
-    @JsonIgnore
     private List<File> files;
 
     @ManyToOne(
@@ -60,14 +56,6 @@ public class Directory {
             name = "owner_id",
             referencedColumnName = "id"
     )
-    @JsonIgnore
     private User owner;
 
-    @JsonProperty("parentDirectory")
-    public Long getParentDirectoryId() {
-        if (parentDirectory == null) {
-            return null;
-        }
-        return parentDirectory.getId();
-    }
 }

@@ -3,10 +3,6 @@ package com.cloudkeep.CloudKeep.user;
 import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.file.File;
 import com.cloudkeep.CloudKeep.verification.Verification;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -67,7 +63,6 @@ public class User implements UserDetails {
             mappedBy = "user"
     )
     private List<Verification> verifications;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
