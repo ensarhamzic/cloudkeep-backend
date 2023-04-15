@@ -6,6 +6,8 @@ import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
 import com.cloudkeep.CloudKeep.verification.requests.VerificationRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -70,13 +72,25 @@ public class AuthenticationController {
         }
     }
 
+    @PostMapping("/verify-token")
+    public ResponseEntity<?> verifyToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        try {
+            AuthenticationResponse response = service.verifyToken(authHeader);
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
         BindingResult result = ex.getBindingResult();
         List<ObjectError> fieldErrors = result.getAllErrors();
 
-        List<String> errors = fieldErrors.stream().map(error -> error.getDefaultMessage()).toList();
+        List<String> errors = fieldErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
 
         // Create custom error response object
         ErrorResponse errorResponse = new ErrorResponse("Validation Failed", errors);

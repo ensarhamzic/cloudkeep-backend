@@ -92,7 +92,7 @@ public class AuthenticationService {
     }
     public AuthenticationResponse verifyEmail(VerificationRequest request) {
         var verificationOptional = verificationRepository.findByCodeAndUserEmail(request.getCode(), request.getEmail());
-        if(!verificationOptional.isPresent())
+        if(verificationOptional.isEmpty())
             throw new IllegalStateException("Invalid code");
         var verification = verificationOptional.get();
         var user = verification.getUser();
@@ -112,6 +112,14 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .user(userDTOMapper.apply(user))
+                .build();
+    }
+
+    public AuthenticationResponse verifyToken(String header) {
+        var user = jwtService.getUserFromToken(header);
+        return AuthenticationResponse.builder()
+                .token(jwtService.extractTokenFromHeader(header))
                 .user(userDTOMapper.apply(user))
                 .build();
     }

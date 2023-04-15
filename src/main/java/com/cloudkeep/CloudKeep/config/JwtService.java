@@ -1,6 +1,9 @@
 package com.cloudkeep.CloudKeep.config;
 
 import com.cloudkeep.CloudKeep.user.User;
+import com.cloudkeep.CloudKeep.user.UserDTO;
+import com.cloudkeep.CloudKeep.user.UserDTOMapper;
+import com.cloudkeep.CloudKeep.user.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -20,6 +23,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
+    private final UserRepository userRepository;
 
     @Value("${jwt.secret}")
     private String JWT_SECRET;
@@ -78,7 +82,12 @@ public class JwtService {
         return Keys.hmacShaKeyFor(decodedKey);
     }
 
-    private String extractTokenFromHeader(String header) {
+    public String extractTokenFromHeader(String header) {
         return header.substring(7);
+    }
+
+    public User getUserFromToken(String header) {
+        Long id = extractId(header);
+        return userRepository.findById(id).orElseThrow();
     }
 }
