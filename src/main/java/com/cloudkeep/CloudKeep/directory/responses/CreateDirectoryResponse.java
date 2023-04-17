@@ -1,6 +1,7 @@
 package com.cloudkeep.CloudKeep.directory.responses;
 
 import com.cloudkeep.CloudKeep.directory.Directory;
+import com.cloudkeep.CloudKeep.directory.DirectoryDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,5 +13,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateDirectoryResponse {
     private String message;
-    private Directory data;
+    private DirectoryDTO data;
 }

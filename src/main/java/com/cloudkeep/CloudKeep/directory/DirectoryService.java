@@ -20,8 +20,8 @@ public class DirectoryService {
     public CreateDirectoryResponse createDirectory(CreateDirectoryRequest request, Long userId) {
         var user = userRepository.findById(userId).orElseThrow();
         Directory parentDir = null;
-        if(request.getParentId() != null) {
-            parentDir = directoryRepository.findById(request.getParentId()).orElseThrow();
+        if(request.getParentDirectoryId() != null) {
+            parentDir = directoryRepository.findById(request.getParentDirectoryId()).orElseThrow();
             if(!Objects.equals(parentDir.getOwner().getId(), userId)) {
                 throw new IllegalStateException("You can't create a directory in a directory that doesn't belong to you");
             }
@@ -34,7 +34,7 @@ public class DirectoryService {
 
         return CreateDirectoryResponse.builder()
                 .message("Directory created successfully")
-                .data(directory)
+                .data(directoryDTOMapper.apply(directory))
                 .build();
     }
 
