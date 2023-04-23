@@ -22,12 +22,26 @@ public class DirectoryService {
         Directory parentDir = null;
         if(request.getParentDirectoryId() != null) {
             parentDir = directoryRepository.findById(request.getParentDirectoryId()).orElseThrow();
-            if(!Objects.equals(parentDir.getOwner().getId(), userId)) {
-                throw new IllegalStateException("You can't create a directory in a directory that doesn't belong to you");
-            }
+            if(!Objects.equals(parentDir.getOwner().getId(), userId))
+                throw new IllegalStateException(
+                        "You can't create a directory in a directory that doesn't belong to you"
+                );
         }
+
+        // Check if the user already has a directory in the same directory with the same name
+        var currentDirs = directoryRepository
+                .findAllByOwner_IdAndParentDirectory_Id(
+                        user.getId(),
+                        parentDir == null ? null : parentDir.getId()
+                );
+        String dirName = request.getName().toLowerCase().trim();
+        if(currentDirs.stream().anyMatch(directory -> directory.getName().equals(dirName)))
+            throw new IllegalStateException("You already have a directory with this name");
+
+
+        // If every validation succeed, create the directory
         Directory directory = new Directory();
-        directory.setName(request.getName());
+        directory.setName(dirName);
         directory.setOwner(user);
         directory.setParentDirectory(parentDir);
         directoryRepository.save(directory);
