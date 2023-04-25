@@ -5,6 +5,7 @@ import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.directory.requests.CreateDirectoryRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +58,7 @@ public class DirectoryController {
         BindingResult result = ex.getBindingResult();
         List<ObjectError> fieldErrors = result.getAllErrors();
 
-        List<String> errors = fieldErrors.stream().map(error -> error.getDefaultMessage()).toList();
+        List<String> errors = fieldErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
 
         // Create custom error response object
         ErrorResponse errorResponse = new ErrorResponse("Validation Failed", errors);

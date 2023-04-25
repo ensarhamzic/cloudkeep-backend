@@ -3,6 +3,7 @@ package com.cloudkeep.CloudKeep.auth;
 import com.cloudkeep.CloudKeep.ErrorResponse;
 import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
 import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
+import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
 import com.cloudkeep.CloudKeep.verification.requests.VerificationRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.cloudkeep.CloudKeep.auth;
+package com.cloudkeep.CloudKeep.auth.responses;
 
 import com.cloudkeep.CloudKeep.user.UserDTO;
 import lombok.AllArgsConstructor;

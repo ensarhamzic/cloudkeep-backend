@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class DirectoryService {
         Directory parentDir = null;
         if(request.getParentDirectoryId() != null) {
             parentDir = directoryRepository.findById(request.getParentDirectoryId()).orElseThrow();
-            if(!Objects.equals(parentDir.getOwner().getId(), userId))
+            if(!parentDir.getOwner().getId().equals(userId))
                 throw new IllegalStateException(
                         "You can't create a directory in a directory that doesn't belong to you"
                 );
@@ -40,10 +39,11 @@ public class DirectoryService {
 
 
         // If every validation succeed, create the directory
-        Directory directory = new Directory();
-        directory.setName(dirName);
-        directory.setOwner(user);
-        directory.setParentDirectory(parentDir);
+        Directory directory = Directory.builder()
+                .name(dirName)
+                .owner(user)
+                .parentDirectory(parentDir)
+                .build();
         directoryRepository.save(directory);
 
         return CreateDirectoryResponse.builder()

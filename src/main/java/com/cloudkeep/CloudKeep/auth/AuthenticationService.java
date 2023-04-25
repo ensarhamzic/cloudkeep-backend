@@ -2,6 +2,7 @@ package com.cloudkeep.CloudKeep.auth;
 
 import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
 import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
+import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.user.User;
 import com.cloudkeep.CloudKeep.user.UserDTOMapper;
