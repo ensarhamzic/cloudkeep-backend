@@ -4,6 +4,7 @@ import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class File {
     @Id
     @SequenceGenerator(

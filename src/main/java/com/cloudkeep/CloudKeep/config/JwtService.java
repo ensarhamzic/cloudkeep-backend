@@ -24,6 +24,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JwtService {
     private final UserRepository userRepository;
+    private final UserDTOMapper userDTOMapper;
 
     @Value("${jwt.secret}")
     private String JWT_SECRET;
@@ -86,8 +87,16 @@ public class JwtService {
         return header.substring(7);
     }
 
+    public UserDTO getUserDTOFromToken(String header) {
+        Long id = extractId(header);
+        var user=  userRepository.findById(id).orElseThrow();
+        return userDTOMapper.apply(user);
+    }
+
     public User getUserFromToken(String header) {
         Long id = extractId(header);
         return userRepository.findById(id).orElseThrow();
     }
+
+
 }

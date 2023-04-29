@@ -5,6 +5,7 @@ import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
 import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.user.User;
+import com.cloudkeep.CloudKeep.user.UserDTO;
 import com.cloudkeep.CloudKeep.user.UserDTOMapper;
 import com.cloudkeep.CloudKeep.user.UserRepository;
 import com.cloudkeep.CloudKeep.verification.Verification;
@@ -118,10 +119,10 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse verifyToken(String header) {
-        var user = jwtService.getUserFromToken(header);
+        UserDTO user = jwtService.getUserDTOFromToken(header);
         return AuthenticationResponse.builder()
                 .token(jwtService.extractTokenFromHeader(header))
-                .user(userDTOMapper.apply(user))
+                .user(user)
                 .build();
     }
 

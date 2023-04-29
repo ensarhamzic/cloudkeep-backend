@@ -21,16 +21,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DirectoryController {
     private final DirectoryService directoryService;
-    private final JwtService jwtService;
 
     @GetMapping
     public ResponseEntity<?> getDirectories(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
             @RequestParam(required = false) Long directoryId
     ) {
         try {
-            Long userId = jwtService.extractId(authHeader);
-            return ResponseEntity.ok(directoryService.getDirectories(userId, directoryId));
+            return ResponseEntity.ok(directoryService.getDirectories(token, directoryId));
         } catch (IllegalStateException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
@@ -40,10 +38,9 @@ public class DirectoryController {
     @PostMapping
     public ResponseEntity<?> createDirectory(
             @Valid @RequestBody CreateDirectoryRequest request,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         try {
-            Long userId = jwtService.extractId(authHeader);
-            return ResponseEntity.ok(directoryService.createDirectory(request, userId));
+            return ResponseEntity.ok(directoryService.createDirectory(token, request));
         } catch (IllegalStateException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);

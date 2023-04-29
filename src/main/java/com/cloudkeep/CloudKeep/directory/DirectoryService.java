@@ -1,5 +1,6 @@
 package com.cloudkeep.CloudKeep.directory;
 
+import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.directory.requests.CreateDirectoryRequest;
 import com.cloudkeep.CloudKeep.directory.responses.CreateDirectoryResponse;
 import com.cloudkeep.CloudKeep.user.UserRepository;
@@ -14,14 +15,14 @@ import java.util.List;
 @Transactional
 public class DirectoryService {
     private final DirectoryRepository directoryRepository;
-    private final UserRepository userRepository;
     private final DirectoryDTOMapper directoryDTOMapper;
-    public CreateDirectoryResponse createDirectory(CreateDirectoryRequest request, Long userId) {
-        var user = userRepository.findById(userId).orElseThrow();
+    private final JwtService jwtService;
+    public CreateDirectoryResponse createDirectory(String token, CreateDirectoryRequest request) {
+        var user = jwtService.getUserFromToken(token);
         Directory parentDir = null;
         if(request.getParentDirectoryId() != null) {
             parentDir = directoryRepository.findById(request.getParentDirectoryId()).orElseThrow();
-            if(!parentDir.getOwner().getId().equals(userId))
+            if(!parentDir.getOwner().getId().equals(user.getId()))
                 throw new IllegalStateException(
                         "You can't create a directory in a directory that doesn't belong to you"
                 );
@@ -52,7 +53,8 @@ public class DirectoryService {
                 .build();
     }
 
-    public List<DirectoryDTO> getDirectories(Long userId, Long directoryId) {
+    public List<DirectoryDTO> getDirectories(String token, Long directoryId) {
+        Long userId = jwtService.extractId(token);
         return directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId).stream().map(directoryDTOMapper).toList();
     }
 }
