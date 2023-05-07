@@ -16,16 +16,6 @@ public class CloudKeepApplication {
 	private static String CLOUDINARY_URL;
 
 	@Bean
-	public MultipartConfigElement multipartConfigElement() {
-		return new MultipartConfigElement("");
-	}
-
-	@Bean(name = "multipartResolver")
-	public MultipartResolver multipartResolver() {
-		return new StandardServletMultipartResolver();
-	}
-
-	@Bean
 	public ServletContextInitializer initializer() {
 		return servletContext -> servletContext.setInitParameter("org.apache.tomcat.websocket.textBufferSize", "1000000");
 	}
