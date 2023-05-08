@@ -38,7 +38,7 @@ public class FileController {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+            ErrorResponse errorResponse = new ErrorResponse("Something went wrong");
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

@@ -4,11 +4,13 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.Singleton;
 import com.cloudinary.utils.ObjectUtils;
 import com.cloudkeep.CloudKeep.config.JwtService;
+import com.cloudkeep.CloudKeep.config.firebase.FirebaseStorageStrategy;
 import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.directory.DirectoryRepository;
 import com.cloudkeep.CloudKeep.file.requests.FileUploadRequest;
 import com.cloudkeep.CloudKeep.file.responses.FileUploadResponse;
 import com.cloudkeep.CloudKeep.user.User;
+import com.google.cloud.storage.Blob;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class FileService {
     private final JwtService jwtService;
     private final FileRepository fileRepository;
     private final DirectoryRepository directoryRepository;
+    private final FirebaseStorageStrategy firebaseStorageStrategy;
     public FileUploadResponse uploadFile(String token, Long directoryId, FileUploadRequest request) throws IOException {
         User user = jwtService.getUserFromToken(token);
         Directory directory = directoryRepository.findById(directoryId).orElseThrow();
@@ -34,15 +37,25 @@ public class FileService {
             throw new IllegalStateException("You already have a file with this name");
 
         // If every validation succeed, upload file
-        Cloudinary cloudinary = Singleton.getCloudinary();
-        var uploadResults = cloudinary.uploader().upload(
-                request.getFile().getBytes(),
-                ObjectUtils.asMap("folder", "cloudkeep"));
+//        Cloudinary cloudinary = Singleton.getCloudinary();
+//        var uploadResults = cloudinary.uploader().upload(
+//                request.getFile().getBytes(),
+//                ObjectUtils.asMap("folder", "cloudkeep"));
+
+//        File file = File.builder()
+//                .name(request.getName())
+//                .url(uploadResults.get("secure_url").toString())
+//                .publicId(uploadResults.get("public_id").toString())
+//                .owner(user)
+//                .directory(directory)
+//                .build();
+
+        Blob fileInfo = firebaseStorageStrategy.uploadFile(request.getFile());
 
         File file = File.builder()
                 .name(request.getName())
-                .url(uploadResults.get("secure_url").toString())
-                .publicId(uploadResults.get("public_id").toString())
+                .url(fileInfo.getMediaLink())
+                .publicId(fileInfo.getBlobId().getName())
                 .owner(user)
                 .directory(directory)
                 .build();
