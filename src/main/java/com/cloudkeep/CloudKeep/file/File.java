@@ -35,8 +35,7 @@ public class File {
 
     @Column(nullable = false, length = 30)
     private String name;
-    private String url;
-    private String publicId;
+    private String path;
 
     @ManyToOne(
             optional = false,

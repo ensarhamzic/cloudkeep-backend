@@ -2,6 +2,7 @@ package com.cloudkeep.CloudKeep.file;
 
 import com.cloudkeep.CloudKeep.ErrorResponse;
 import com.cloudkeep.CloudKeep.config.JwtService;
+import com.cloudkeep.CloudKeep.config.firebase.FirebaseStorageStrategy;
 import com.cloudkeep.CloudKeep.file.requests.FileUploadRequest;
 import com.cloudkeep.CloudKeep.user.UserDTO;
 import jakarta.validation.Valid;
@@ -12,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +23,6 @@ import java.util.List;
 public class FileController {
 
     private final FileService fileService;
-    private final JwtService jwtService;
 
     @PostMapping(path = "/directory/{id}/upload")
     public ResponseEntity<?> uploadFile(

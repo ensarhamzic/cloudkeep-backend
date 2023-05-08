@@ -11,8 +11,7 @@ public class FileDTOMapper implements Function<File, FileDTO> {
         return new FileDTO(
                 file.getId(),
                 file.getName(),
-                file.getUrl(),
-                file.getPublicId(),
+                file.getPath(),
                 file.getOwner().getId(),
                 file.getDirectory() != null ? file.getDirectory().getId() : null
         );

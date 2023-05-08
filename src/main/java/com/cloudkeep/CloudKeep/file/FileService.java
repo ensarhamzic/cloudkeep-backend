@@ -54,8 +54,7 @@ public class FileService {
 
         File file = File.builder()
                 .name(request.getName())
-                .url(fileInfo.getMediaLink())
-                .publicId(fileInfo.getBlobId().getName())
+                .path(fileInfo.getBlobId().getName())
                 .owner(user)
                 .directory(directory)
                 .build();

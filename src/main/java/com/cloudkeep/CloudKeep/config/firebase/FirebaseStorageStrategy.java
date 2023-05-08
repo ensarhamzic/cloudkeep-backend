@@ -2,25 +2,16 @@ package com.cloudkeep.CloudKeep.config.firebase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.*;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
@@ -28,7 +19,6 @@ import java.util.Objects;
 
 @Service
 public class FirebaseStorageStrategy {
-    private final Logger log = LoggerFactory.getLogger(FirebaseStorageStrategy.class);
     private StorageOptions storageOptions;
 
     @Value("${firebase.bucket_name}")
@@ -88,28 +78,27 @@ public class FirebaseStorageStrategy {
         return storage.create(blobInfo, Files.readAllBytes(filePath));
     }
 
-    public ResponseEntity<Object> downloadFile(String fileName, HttpServletRequest request) throws Exception {
-        Storage storage = storageOptions.getService();
-
-        Blob blob = storage.get(BlobId.of(bucketName, fileName));
-        ReadChannel reader = blob.reader();
-        InputStream inputStream = Channels.newInputStream(reader);
-
-        byte[] content = null;
-        log.info("File downloaded successfully.");
-
-        content = IOUtils.toByteArray(inputStream);
-
-        final ByteArrayResource byteArrayResource = new ByteArrayResource(content);
-
-        return ResponseEntity
-                .ok()
-                .contentLength(content.length)
-                .header("Content-type", "application/octet-stream")
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                .body(byteArrayResource);
-
-    }
+//    public ResponseEntity<Object> downloadFile(String fileName) throws Exception {
+//        Storage storage = storageOptions.getService();
+//
+//        Blob blob = storage.get(BlobId.of(bucketName, fileName));
+//        ReadChannel reader = blob.reader();
+//        InputStream inputStream = Channels.newInputStream(reader);
+//
+//        byte[] content = null;
+//        log.info("File downloaded successfully.");
+//
+//        content = IOUtils.toByteArray(inputStream);
+//
+//        final ByteArrayResource byteArrayResource = new ByteArrayResource(content);
+//
+//        return ResponseEntity
+//                .ok()
+//                .contentLength(content.length)
+//                .header("Content-type", "application/octet-stream")
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+//                .body(byteArrayResource);
+//    }
 
 
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
@@ -141,7 +130,6 @@ public class FirebaseStorageStrategy {
         ObjectMapper mapper = new ObjectMapper();
         String jsonString = mapper.writeValueAsString(firebaseCredential);
 
-        var inputStream = IOUtils.toInputStream(jsonString);
-        return inputStream;
+        return IOUtils.toInputStream(jsonString);
     }
 }
