@@ -24,14 +24,13 @@ public class FileController {
 
     private final FileService fileService;
 
-    @PostMapping(path = "/directory/{id}/upload")
+    @PostMapping(path = "/directory/upload")
     public ResponseEntity<?> uploadFile(
-        @PathVariable Long id,
         @Valid @ModelAttribute FileUploadRequest request,
         @RequestHeader("Authorization") String token
     ) {
         try {
-            return ResponseEntity.ok(fileService.uploadFile(token, id, request));
+            return ResponseEntity.ok(fileService.uploadFile(token, request));
         } catch (IllegalStateException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);

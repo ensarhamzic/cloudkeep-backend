@@ -10,6 +10,9 @@ public class FileUploadRequest {
     @NotNull(message = "Name cannot be null")
     @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters")
     private String name;
+
+    private Long directoryId;
+
     @NotNull(message = "File cannot be null")
     private MultipartFile file;
 }

@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class FirebaseStorageStrategy {
@@ -65,17 +66,24 @@ public class FirebaseStorageStrategy {
                 .setCredentials(GoogleCredentials.fromStream(firebaseCredential)).build();
     }
 
-    public Blob uploadFile(MultipartFile multipartFile) throws IOException {
-        File file = convertMultiPartToFile(multipartFile);
-        Path filePath = file.toPath();
-        String objectName = generateFileName(multipartFile);
-
+    public Blob uploadFile(MultipartFile file) throws IOException {
+        var uuid = UUID.randomUUID().toString();
+        BlobId blobId = BlobId.of(bucketName, uuid);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
+        byte[] bytes = file.getBytes();
         Storage storage = storageOptions.getService();
+        storage.create(blobInfo, bytes);
+        return storage.create(blobInfo, bytes);
+//        File file = convertMultiPartToFile(multipartFile);
+//        Path filePath = file.toPath();
+//        String objectName = generateFileName(multipartFile);
+//
+//        Storage storage = storageOptions.getService();
+//
+//        BlobId blobId = BlobId.of(bucketName, objectName);
+//        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
 
-        BlobId blobId = BlobId.of(bucketName, objectName);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-
-        return storage.create(blobInfo, Files.readAllBytes(filePath));
+//        return storage.create(blobInfo, Files.readAllBytes(filePath));
     }
 
 //    public ResponseEntity<Object> downloadFile(String fileName) throws Exception {
@@ -101,17 +109,17 @@ public class FirebaseStorageStrategy {
 //    }
 
 
-    private File convertMultiPartToFile(MultipartFile file) throws IOException {
-        File convertedFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
-        FileOutputStream fos = new FileOutputStream(convertedFile);
-        fos.write(file.getBytes());
-        fos.close();
-        return convertedFile;
-    }
-
-    private String generateFileName(MultipartFile multiPart) {
-        return new Date().getTime() + "-" + Objects.requireNonNull(multiPart.getOriginalFilename()).replace(" ", "_");
-    }
+//    private File convertMultiPartToFile(MultipartFile file) throws IOException {
+//        File convertedFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
+//        FileOutputStream fos = new FileOutputStream(convertedFile);
+//        fos.write(file.getBytes());
+//        fos.close();
+//        return convertedFile;
+//    }
+//
+//    private String generateFileName(MultipartFile multiPart) {
+//        return new Date().getTime() + "-" + Objects.requireNonNull(multiPart.getOriginalFilename()).replace(" ", "_");
+//    }
 
     private InputStream createFirebaseCredential() throws Exception {
         FirebaseCredential firebaseCredential = FirebaseCredential.builder()
