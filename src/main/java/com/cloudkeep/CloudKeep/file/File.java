@@ -33,7 +33,7 @@ public class File {
             generator = "file_sequence")
     private Long id;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 256)
     private String name;
     private String path;
 

@@ -15,8 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
-import java.util.Optional;
-
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -33,20 +32,9 @@ public class FileService {
         if(request.getDirectoryId() != null)
             directory = directoryRepository.findById(request.getDirectoryId()).orElseThrow();
 
-        if(directory != null) {
+        if(directory != null)
             if(!directory.getOwner().getId().equals(user.getId()))
                 throw new IllegalStateException("You can't upload a file to a directory that doesn't belong to you");
-        }
-
-        var filesInDir = fileRepository
-                .findAllByOwner_IdAndDirectory_Id(
-                        user.getId(),
-                        request.getDirectoryId() == null ? null : request.getDirectoryId()
-                );
-        String fileName = request.getName().toLowerCase().trim();
-        if(filesInDir.stream().anyMatch(file -> file.getName().equals(fileName)))
-            throw new IllegalStateException("You already have a file with this name");
-
 
         // If every validation succeed, upload file
 //        Cloudinary cloudinary = Singleton.getCloudinary();
@@ -61,11 +49,26 @@ public class FileService {
 //                .owner(user)
 //                .directory(directory)
 //                .build();
-
         Blob fileInfo = firebaseStorageStrategy.uploadFile(request.getFile());
 
+        var filesInDir = fileRepository
+                .findAllByOwner_IdAndDirectory_Id(
+                        user.getId(),
+                        request.getDirectoryId() == null ? null : request.getDirectoryId()
+                );
+
+        String fileName;
+        AtomicReference<String> fileNameRef = new AtomicReference<>(request.getFile().getOriginalFilename().trim());
+        int counter = 0;
+        while (filesInDir.stream().anyMatch(file -> file.getName().equals(fileNameRef.get()))) {
+            counter++;
+            fileNameRef.set(request.getFile().getOriginalFilename() + " (" + counter + ")");
+        }
+        fileName = fileNameRef.get();
+
+
         File file = File.builder()
-                .name(request.getName())
+                .name(fileName)
                 .path(fileInfo.getBlobId().getName())
                 .owner(user)
                 .directory(directory)
