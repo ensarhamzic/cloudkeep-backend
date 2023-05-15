@@ -132,7 +132,7 @@ public class FileService {
         }
 
         return MediaUploadResponse.builder()
-                .message("File uploaded successfully")
+                .message("Files uploaded successfully")
                 .data(uploadedFiles.stream().map(fileDTOMapper).toList())
                 .build();
     }
