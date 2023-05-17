@@ -3,6 +3,9 @@ package com.cloudkeep.CloudKeep.directory;
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.directory.requests.CreateDirectoryRequest;
 import com.cloudkeep.CloudKeep.directory.responses.CreateDirectoryResponse;
+import com.cloudkeep.CloudKeep.directory.responses.GetDirectoriesResponse;
+import com.cloudkeep.CloudKeep.file.FileDTOMapper;
+import com.cloudkeep.CloudKeep.file.FileRepository;
 import com.cloudkeep.CloudKeep.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,8 @@ import java.util.List;
 public class DirectoryService {
     private final DirectoryRepository directoryRepository;
     private final DirectoryDTOMapper directoryDTOMapper;
+    private final FileRepository fileRepository;
+    private final FileDTOMapper fileDTOMapper;
     private final JwtService jwtService;
     public CreateDirectoryResponse createDirectory(String token, CreateDirectoryRequest request) {
         var user = jwtService.getUserFromToken(token);
@@ -53,8 +58,13 @@ public class DirectoryService {
                 .build();
     }
 
-    public List<DirectoryDTO> getDirectories(String token, Long directoryId) {
+    public GetDirectoriesResponse getDirectories(String token, Long directoryId) {
         Long userId = jwtService.extractId(token);
-        return directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId).stream().map(directoryDTOMapper).toList();
+        var directories = directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId).stream().map(directoryDTOMapper).toList();
+        var files = fileRepository.findAllByOwner_IdAndDirectory_Id(userId, directoryId).stream().map(fileDTOMapper).toList();
+        return GetDirectoriesResponse.builder()
+                .directories(directories)
+                .files(files)
+                .build();
     }
 }

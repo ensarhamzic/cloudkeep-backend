@@ -1,3 +1,12 @@
 package com.cloudkeep.CloudKeep.directory;
 
-public record DirectoryDTO(Long id, String name, Long parentDirectoryId, Long ownerId) { }
+import com.cloudkeep.CloudKeep.file.FileDTO;
+
+import java.util.List;
+
+public record DirectoryDTO(
+        Long id,
+        String name,
+        Long parentDirectoryId,
+        Long ownerId
+        ) { }
