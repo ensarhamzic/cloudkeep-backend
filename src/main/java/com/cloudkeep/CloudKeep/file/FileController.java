@@ -1,11 +1,7 @@
 package com.cloudkeep.CloudKeep.file;
 
 import com.cloudkeep.CloudKeep.ErrorResponse;
-import com.cloudkeep.CloudKeep.config.JwtService;
-import com.cloudkeep.CloudKeep.config.firebase.FirebaseStorageStrategy;
-import com.cloudkeep.CloudKeep.file.requests.FileUploadRequest;
-import com.cloudkeep.CloudKeep.file.requests.MediaUploadRequest;
-import com.cloudkeep.CloudKeep.user.UserDTO;
+import com.cloudkeep.CloudKeep.file.requests.FilesUploadRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -27,27 +23,11 @@ public class FileController {
 
     @PostMapping(path = "/directory/upload")
     public ResponseEntity<?> uploadFile(
-        @Valid @ModelAttribute FileUploadRequest request,
+        @Valid @RequestBody FilesUploadRequest request,
         @RequestHeader("Authorization") String token
     ) {
         try {
             return ResponseEntity.ok(fileService.uploadFile(token, request));
-        } catch (IllegalStateException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse("Something went wrong");
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
-    }
-
-    @PostMapping(path = "/directory/upload/media")
-    public ResponseEntity<?> uploadFiles(
-        @Valid @ModelAttribute MediaUploadRequest request,
-        @RequestHeader("Authorization") String token
-    ) {
-        try {
-            return ResponseEntity.ok(fileService.uploadMedia(token, request));
         } catch (IllegalStateException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);

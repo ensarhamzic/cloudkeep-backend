@@ -35,6 +35,8 @@ public class File {
 
     @Column(nullable = false, length = 256)
     private String name;
+
+    @Column(nullable = false, length = 256)
     private String path;
 
     @ManyToOne(
