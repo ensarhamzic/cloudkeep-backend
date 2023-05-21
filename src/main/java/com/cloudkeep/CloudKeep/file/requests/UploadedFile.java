@@ -1,5 +1,6 @@
 package com.cloudkeep.CloudKeep.file.requests;
 
+import com.cloudkeep.CloudKeep.file.FileType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -10,4 +11,7 @@ public class UploadedFile {
 
     @NotNull(message = "Filename cannot be null")
     private String name;
+
+    @NotNull(message = "Type cannot be null")
+    private FileType type;
 }

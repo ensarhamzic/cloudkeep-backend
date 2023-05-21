@@ -8,12 +8,10 @@ import com.cloudkeep.CloudKeep.file.requests.FilesUploadRequest;
 import com.cloudkeep.CloudKeep.file.requests.UploadedFile;
 import com.cloudkeep.CloudKeep.file.responses.FilesUploadResponse;
 import com.cloudkeep.CloudKeep.user.User;
-import com.google.cloud.storage.Blob;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,7 +24,6 @@ public class FileService {
     private final JwtService jwtService;
     private final FileRepository fileRepository;
     private final DirectoryRepository directoryRepository;
-    private final FirebaseStorageStrategy firebaseStorageStrategy;
     public FilesUploadResponse uploadFile(String token, FilesUploadRequest request) {
         User user = jwtService.getUserFromToken(token);
         Directory directory = null;
@@ -58,6 +55,7 @@ public class FileService {
             File newFile = File.builder()
                     .name(fileNameRef.get())
                     .path(file.getPath())
+                    .type(file.getType())
                     .owner(user)
                     .directory(directory)
                     .build();

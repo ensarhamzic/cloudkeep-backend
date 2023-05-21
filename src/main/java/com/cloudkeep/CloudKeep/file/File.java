@@ -39,6 +39,10 @@ public class File {
     @Column(nullable = false, length = 256)
     private String path;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FileType type;
+
     @ManyToOne(
             optional = false,
             cascade = CascadeType.ALL
