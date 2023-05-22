@@ -12,6 +12,7 @@ public class FileDTOMapper implements Function<File, FileDTO> {
                 file.getId(),
                 file.getName(),
                 file.getPath(),
+                file.getType(),
                 file.getOwner().getId(),
                 file.getDirectory() != null ? file.getDirectory().getId() : null
         );
