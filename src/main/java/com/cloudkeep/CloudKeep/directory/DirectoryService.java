@@ -60,11 +60,19 @@ public class DirectoryService {
 
     public GetDirectoriesResponse getDirectories(String token, Long directoryId) {
         Long userId = jwtService.extractId(token);
+        Directory currentDirectory = null;
+        if(directoryId != null) {
+            currentDirectory = directoryRepository.findById(directoryId).orElse(null);
+            if(currentDirectory != null && !currentDirectory.getOwner().getId().equals(userId))
+                throw new IllegalStateException("You can't access a directory that doesn't belong to you");
+        }
         var directories = directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId).stream().map(directoryDTOMapper).toList();
         var files = fileRepository.findAllByOwner_IdAndDirectory_Id(userId, directoryId).stream().map(fileDTOMapper).toList();
-        return GetDirectoriesResponse.builder()
+
+        GetDirectoriesResponse.GetDirectoriesResponseBuilder response = GetDirectoriesResponse.builder()
+                .currentDirectory(currentDirectory != null ? directoryDTOMapper.apply(currentDirectory) : null)
                 .directories(directories)
-                .files(files)
-                .build();
+                .files(files);
+        return response.build();
     }
 }

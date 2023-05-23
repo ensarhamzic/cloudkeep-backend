@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetDirectoriesResponse {
+    private DirectoryDTO currentDirectory;
     private List<DirectoryDTO> directories;
     private List<FileDTO> files;
 }
