@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class CreateDirectoryRequest {
     @NotNull(message = "Name is required")
-    @Size(min = 3, max = 30, message = "Name must be between 3 and 30 characters")
+    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters long")
     private String name;
     private Long parentDirectoryId;
 }

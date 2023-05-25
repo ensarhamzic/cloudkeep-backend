@@ -1,7 +1,8 @@
 package com.cloudkeep.CloudKeep.content;
 
 import com.cloudkeep.CloudKeep.content.requests.DeleteContentsRequest;
-import com.cloudkeep.CloudKeep.directory.requests.CreateDirectoryRequest;
+import com.cloudkeep.CloudKeep.content.requests.RenameContentRequest;
+import com.cloudkeep.CloudKeep.content.responses.RenameContentResponse;
 import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,14 @@ public class ContentController {
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
             @Valid @RequestBody DeleteContentsRequest request
     ) {
-       return ResponseEntity.ok(contentService.deleteContents(token, request));
+       return ResponseEntity.ok(contentService.deleteContent(token, request));
+    }
+
+    @PutMapping()
+    public ResponseEntity<RenameContentResponse> renameContent(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+            @Valid @RequestBody RenameContentRequest request
+    ) {
+       return ResponseEntity.ok(contentService.renameContent(token, request));
     }
 }
