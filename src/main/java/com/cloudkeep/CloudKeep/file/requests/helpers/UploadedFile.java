@@ -1,4 +1,4 @@
-package com.cloudkeep.CloudKeep.file.requests;
+package com.cloudkeep.CloudKeep.file.requests.helpers;
 
 import com.cloudkeep.CloudKeep.file.FileType;
 import jakarta.validation.constraints.NotNull;

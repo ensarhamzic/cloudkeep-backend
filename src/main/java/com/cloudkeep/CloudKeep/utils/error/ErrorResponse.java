@@ -1,4 +1,4 @@
-package com.cloudkeep.CloudKeep;
+package com.cloudkeep.CloudKeep.utils.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

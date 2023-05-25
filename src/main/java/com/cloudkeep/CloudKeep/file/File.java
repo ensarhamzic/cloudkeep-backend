@@ -43,6 +43,9 @@ public class File {
     @Column(nullable = false)
     private FileType type;
 
+    @Column(nullable = false)
+    private Boolean deleted;
+
     @ManyToOne(
             optional = false,
             cascade = CascadeType.ALL

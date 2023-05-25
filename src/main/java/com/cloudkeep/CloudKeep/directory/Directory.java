@@ -4,6 +4,9 @@ import com.cloudkeep.CloudKeep.file.File;
 import com.cloudkeep.CloudKeep.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.List;
 
@@ -28,6 +31,9 @@ public class Directory {
     @Column(nullable = false, length = 30)
     private String name;
 
+    @Column(nullable = false)
+    private Boolean deleted;
+
     @ManyToOne(
             cascade = CascadeType.ALL
     )
@@ -41,12 +47,16 @@ public class Directory {
             mappedBy = "parentDirectory",
             cascade = CascadeType.ALL
     )
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Directory> subDirectories;
 
     @OneToMany(
             mappedBy = "directory",
             cascade = CascadeType.ALL
     )
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<File> files;
 
     @ManyToOne(

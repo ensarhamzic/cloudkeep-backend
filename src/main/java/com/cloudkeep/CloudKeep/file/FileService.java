@@ -1,11 +1,10 @@
 package com.cloudkeep.CloudKeep.file;
 
 import com.cloudkeep.CloudKeep.config.JwtService;
-import com.cloudkeep.CloudKeep.config.firebase.FirebaseStorageStrategy;
 import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.directory.DirectoryRepository;
 import com.cloudkeep.CloudKeep.file.requests.FilesUploadRequest;
-import com.cloudkeep.CloudKeep.file.requests.UploadedFile;
+import com.cloudkeep.CloudKeep.file.requests.helpers.UploadedFile;
 import com.cloudkeep.CloudKeep.file.responses.FilesUploadResponse;
 import com.cloudkeep.CloudKeep.user.User;
 import jakarta.transaction.Transactional;
@@ -28,14 +27,16 @@ public class FileService {
         User user = jwtService.getUserFromToken(token);
         Directory directory = null;
         if(request.getDirectoryId() != null)
-            directory = directoryRepository.findById(request.getDirectoryId()).orElseThrow();
+            directory = directoryRepository.findById(request.getDirectoryId()).orElseThrow(
+                    () -> new IllegalStateException("Directory with id " + request.getDirectoryId() + " not found")
+            );
 
         if(directory != null)
             if(!directory.getOwner().getId().equals(user.getId()))
                 throw new IllegalStateException("You can't upload a file to a directory that doesn't belong to you");
 
         var filesInDir = fileRepository
-                .findAllByOwner_IdAndDirectory_Id(
+                .findAllByOwner_IdAndDirectory_IdAndDeletedFalse(
                         user.getId(),
                         request.getDirectoryId() == null ? null : request.getDirectoryId()
                 );
@@ -58,6 +59,7 @@ public class FileService {
                     .type(file.getType())
                     .owner(user)
                     .directory(directory)
+                    .deleted(false)
                     .build();
             files.add(newFile);
 

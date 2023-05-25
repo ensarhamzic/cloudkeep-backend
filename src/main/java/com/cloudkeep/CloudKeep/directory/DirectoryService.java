@@ -6,12 +6,9 @@ import com.cloudkeep.CloudKeep.directory.responses.CreateDirectoryResponse;
 import com.cloudkeep.CloudKeep.directory.responses.GetDirectoriesResponse;
 import com.cloudkeep.CloudKeep.file.FileDTOMapper;
 import com.cloudkeep.CloudKeep.file.FileRepository;
-import com.cloudkeep.CloudKeep.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +32,7 @@ public class DirectoryService {
 
         // Check if the user already has a directory in the same directory with the same name
         var currentDirs = directoryRepository
-                .findAllByOwner_IdAndParentDirectory_Id(
+                .findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(
                         user.getId(),
                         parentDir == null ? null : parentDir.getId()
                 );
@@ -49,6 +46,7 @@ public class DirectoryService {
                 .name(dirName)
                 .owner(user)
                 .parentDirectory(parentDir)
+                .deleted(false)
                 .build();
         directoryRepository.save(directory);
 
@@ -66,13 +64,13 @@ public class DirectoryService {
             if(currentDirectory != null && !currentDirectory.getOwner().getId().equals(userId))
                 throw new IllegalStateException("You can't access a directory that doesn't belong to you");
         }
-        var directories = directoryRepository.findAllByOwner_IdAndParentDirectory_Id(userId, directoryId).stream().map(directoryDTOMapper).toList();
-        var files = fileRepository.findAllByOwner_IdAndDirectory_Id(userId, directoryId).stream().map(fileDTOMapper).toList();
+        var directories = directoryRepository.findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(directoryDTOMapper).toList();
+        var files = fileRepository.findAllByOwner_IdAndDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(fileDTOMapper).toList();
 
-        GetDirectoriesResponse.GetDirectoriesResponseBuilder response = GetDirectoriesResponse.builder()
+        return GetDirectoriesResponse.builder()
                 .currentDirectory(currentDirectory != null ? directoryDTOMapper.apply(currentDirectory) : null)
                 .directories(directories)
-                .files(files);
-        return response.build();
+                .files(files)
+                .build();
     }
 }
