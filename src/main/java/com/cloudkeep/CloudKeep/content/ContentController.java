@@ -1,6 +1,6 @@
 package com.cloudkeep.CloudKeep.content;
 
-import com.cloudkeep.CloudKeep.content.requests.DeleteContentsRequest;
+import com.cloudkeep.CloudKeep.content.requests.ContentsRequest;
 import com.cloudkeep.CloudKeep.content.requests.RenameContentRequest;
 import com.cloudkeep.CloudKeep.content.responses.RenameContentResponse;
 import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
@@ -19,7 +19,7 @@ public class ContentController {
     @PostMapping()
     public ResponseEntity<BasicResponse> deleteContent(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-            @Valid @RequestBody DeleteContentsRequest request
+            @Valid @RequestBody ContentsRequest request
     ) {
        return ResponseEntity.ok(contentService.deleteContent(token, request));
     }
@@ -30,5 +30,13 @@ public class ContentController {
             @Valid @RequestBody RenameContentRequest request
     ) {
        return ResponseEntity.ok(contentService.renameContent(token, request));
+    }
+
+    @PostMapping("/favorite")
+    public ResponseEntity<BasicResponse> favoriteContent(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+            @Valid @RequestBody ContentsRequest request
+    ) {
+       return ResponseEntity.ok(contentService.addRemoveFavorite(token, request));
     }
 }

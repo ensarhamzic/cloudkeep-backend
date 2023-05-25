@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class DeleteContent {
+public class OneContent {
     @NotNull(message = "Id cannot be null")
     private Long id;
 

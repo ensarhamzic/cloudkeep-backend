@@ -1,10 +1,10 @@
 package com.cloudkeep.CloudKeep.content;
 
 import com.cloudkeep.CloudKeep.config.JwtService;
-import com.cloudkeep.CloudKeep.content.requests.DeleteContentsRequest;
+import com.cloudkeep.CloudKeep.content.requests.ContentsRequest;
 import com.cloudkeep.CloudKeep.content.requests.RenameContentRequest;
 import com.cloudkeep.CloudKeep.content.requests.helpers.ContentType;
-import com.cloudkeep.CloudKeep.content.requests.helpers.DeleteContent;
+import com.cloudkeep.CloudKeep.content.requests.helpers.OneContent;
 import com.cloudkeep.CloudKeep.content.responses.RenameContentResponse;
 import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.directory.DirectoryRepository;
@@ -24,10 +24,10 @@ public class ContentService {
     private final DirectoryRepository directoryRepository;
     private final FileRepository fileRepository;
 
-    public BasicResponse deleteContent(String token, DeleteContentsRequest request) {
+    public BasicResponse deleteContent(String token, ContentsRequest request) {
         var user = jwtService.getUserFromToken(token);
 
-        for (DeleteContent content: request.getContents()) {
+        for (OneContent content: request.getContents()) {
             if (content.getType().equals(ContentType.DIRECTORY)) {
                 var directory = directoryRepository.findById(content.getId()).orElseThrow(
                         () -> new IllegalStateException("Directory not found")
@@ -109,5 +109,32 @@ public class ContentService {
                 .message("Successfully renamed content")
                 .name(newName)
                 .build();
+    }
+
+    public BasicResponse addRemoveFavorite(String token, ContentsRequest request) {
+        var user = jwtService.getUserFromToken(token);
+        var favoriteDirs = directoryRepository.findAllByOwner_IdAndFavoriteTrue(user.getId());
+        var favoriteFiles = fileRepository.findAllByOwner_IdAndFavoriteTrue(user.getId());
+
+        for (OneContent content: request.getContents()) {
+            if (content.getType().equals(ContentType.DIRECTORY)) {
+                var directory = directoryRepository.findById(content.getId()).orElseThrow(
+                        () -> new IllegalStateException("Directory not found")
+                );
+                if (!directory.getOwner().getId().equals(user.getId()))
+                    throw new IllegalStateException("User does not have permission to add this directory to favorites");
+
+                directory.setFavorite(favoriteDirs.stream().noneMatch(dir -> dir.getId().equals(directory.getId())));
+            } else {
+                var file = fileRepository.findById(content.getId()).orElseThrow(
+                        () -> new IllegalStateException("File not found")
+                );
+                if (!file.getOwner().getId().equals(user.getId()))
+                    throw new IllegalStateException("User does not have permission to add this file to favorites");
+
+                file.setFavorite(favoriteFiles.stream().noneMatch(f -> f.getId().equals(file.getId())));
+            }
+        }
+        return BasicResponse.builder().message("Successfully added or removed favorites").build();
     }
 }

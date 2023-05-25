@@ -8,5 +8,6 @@ public record DirectoryDTO(
         Long id,
         String name,
         Long parentDirectoryId,
+        Boolean favorite,
         Long ownerId
         ) { }

@@ -12,8 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "directories")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -28,8 +27,11 @@ public class Directory {
             generator = "directory_sequence")
     private Long id;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 256)
     private String name;
+
+    @Column(nullable = false)
+    private Boolean favorite;
 
     @Column(nullable = false)
     private Boolean deleted;

@@ -18,6 +18,7 @@ public class DirectoryDTOMapper implements Function<Directory, DirectoryDTO> {
                 directory.getId(),
                 directory.getName(),
                 directory.getParentDirectory() != null ? directory.getParentDirectory().getId() : null,
+                directory.getFavorite(),
                 directory.getOwner().getId()
         );
     }

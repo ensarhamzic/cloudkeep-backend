@@ -59,6 +59,7 @@ public class FileService {
                     .type(file.getType())
                     .owner(user)
                     .directory(directory)
+                    .favorite(false)
                     .deleted(false)
                     .build();
             files.add(newFile);

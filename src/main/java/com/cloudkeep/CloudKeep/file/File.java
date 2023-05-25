@@ -44,6 +44,9 @@ public class File {
     private FileType type;
 
     @Column(nullable = false)
+    private Boolean favorite;
+
+    @Column(nullable = false)
     private Boolean deleted;
 
     @ManyToOne(

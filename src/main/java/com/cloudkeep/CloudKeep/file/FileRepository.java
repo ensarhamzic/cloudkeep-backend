@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FileRepository extends JpaRepository<File, Long> {
-    Optional<File> findByName(String name);
+    File findByName(String name);
+    List<File> findAllByOwner_IdAndFavoriteTrue(Long id);
     List<File> findAllByOwner_IdAndDirectory_IdAndDeletedFalse(Long ownerId, Long parentId);
 
 }

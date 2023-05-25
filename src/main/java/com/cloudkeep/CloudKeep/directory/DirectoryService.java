@@ -46,6 +46,7 @@ public class DirectoryService {
                 .name(dirName)
                 .owner(user)
                 .parentDirectory(parentDir)
+                .favorite(false)
                 .deleted(false)
                 .build();
         directoryRepository.save(directory);
