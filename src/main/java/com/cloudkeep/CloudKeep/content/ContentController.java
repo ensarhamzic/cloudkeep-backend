@@ -39,4 +39,5 @@ public class ContentController {
     ) {
        return ResponseEntity.ok(contentService.addRemoveFavorite(token, request));
     }
+
 }

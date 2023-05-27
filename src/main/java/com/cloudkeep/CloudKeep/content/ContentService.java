@@ -113,8 +113,8 @@ public class ContentService {
 
     public BasicResponse addRemoveFavorite(String token, ContentsRequest request) {
         var user = jwtService.getUserFromToken(token);
-        var favoriteDirs = directoryRepository.findAllByOwner_IdAndFavoriteTrue(user.getId());
-        var favoriteFiles = fileRepository.findAllByOwner_IdAndFavoriteTrue(user.getId());
+        var favoriteDirs = directoryRepository.findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(user.getId());
+        var favoriteFiles = fileRepository.findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(user.getId());
 
         for (OneContent content: request.getContents()) {
             if (content.getType().equals(ContentType.DIRECTORY)) {

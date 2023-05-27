@@ -3,7 +3,6 @@ package com.cloudkeep.CloudKeep.directory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface DirectoryRepository extends JpaRepository<Directory, Long> {
     Directory findByName(String name);
@@ -11,6 +10,6 @@ public interface DirectoryRepository extends JpaRepository<Directory, Long> {
     Directory findByIdAndFavoriteTrue(Long id);
     Directory findByIdAndFavoriteFalse(Long id);
     List<Directory> findAllByOwner_Id(Long id);
-    List<Directory> findAllByOwner_IdAndFavoriteTrue(Long id);
+    List<Directory> findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(Long id);
     List<Directory> findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(Long ownerId, Long parentId);
 }

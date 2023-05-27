@@ -4,11 +4,14 @@ import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.directory.requests.CreateDirectoryRequest;
 import com.cloudkeep.CloudKeep.directory.responses.CreateDirectoryResponse;
 import com.cloudkeep.CloudKeep.directory.responses.GetDirectoriesResponse;
+import com.cloudkeep.CloudKeep.file.FileDTO;
 import com.cloudkeep.CloudKeep.file.FileDTOMapper;
 import com.cloudkeep.CloudKeep.file.FileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +60,7 @@ public class DirectoryService {
                 .build();
     }
 
-    public GetDirectoriesResponse getDirectories(String token, Long directoryId) {
+    public GetDirectoriesResponse getDirectories(String token, Long directoryId, Boolean favorite) {
         Long userId = jwtService.extractId(token);
         Directory currentDirectory = null;
         if(directoryId != null) {
@@ -65,8 +68,18 @@ public class DirectoryService {
             if(currentDirectory != null && !currentDirectory.getOwner().getId().equals(userId))
                 throw new IllegalStateException("You can't access a directory that doesn't belong to you");
         }
-        var directories = directoryRepository.findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(directoryDTOMapper).toList();
-        var files = fileRepository.findAllByOwner_IdAndDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(fileDTOMapper).toList();
+
+        List<DirectoryDTO> directories;
+        List<FileDTO> files;
+
+        if (directoryId == null && favorite) {
+            directories = directoryRepository.findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(userId).stream().map(directoryDTOMapper).toList();
+            files = fileRepository.findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(userId).stream().map(fileDTOMapper).toList();
+        } else {
+            directories = directoryRepository.findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(directoryDTOMapper).toList();
+            files = fileRepository.findAllByOwner_IdAndDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(fileDTOMapper).toList();
+        }
+
 
         return GetDirectoriesResponse.builder()
                 .currentDirectory(currentDirectory != null ? directoryDTOMapper.apply(currentDirectory) : null)
