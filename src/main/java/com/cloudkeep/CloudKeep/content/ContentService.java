@@ -2,6 +2,7 @@ package com.cloudkeep.CloudKeep.content;
 
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.content.requests.ContentsRequest;
+import com.cloudkeep.CloudKeep.content.requests.MoveContentsRequest;
 import com.cloudkeep.CloudKeep.content.requests.RenameContentRequest;
 import com.cloudkeep.CloudKeep.content.requests.helpers.ContentType;
 import com.cloudkeep.CloudKeep.content.requests.helpers.OneContent;
@@ -136,5 +137,38 @@ public class ContentService {
             }
         }
         return BasicResponse.builder().message("Successfully added or removed favorites").build();
+    }
+
+    public BasicResponse moveContent(String token, MoveContentsRequest request) {
+        var user = jwtService.getUserFromToken(token);
+        Directory parentDir = null;
+        if(request.getDestinationDirectoryId() != null) {
+            parentDir = directoryRepository.findById(request.getDestinationDirectoryId()).orElseThrow();
+            if(!parentDir.getOwner().getId().equals(user.getId()))
+                throw new IllegalStateException(
+                        "Directory does not belong to you"
+                );
+        }
+
+        for (OneContent content: request.getContents()) {
+            if (content.getType().equals(ContentType.DIRECTORY)) {
+                var directory = directoryRepository.findById(content.getId()).orElseThrow(
+                        () -> new IllegalStateException("Directory not found")
+                );
+                if (!directory.getOwner().getId().equals(user.getId()))
+                    throw new IllegalStateException("User does not have permission to move this directory");
+
+                directory.setParentDirectory(parentDir);
+            } else {
+                var file = fileRepository.findById(content.getId()).orElseThrow(
+                        () -> new IllegalStateException("File not found")
+                );
+                if (!file.getOwner().getId().equals(user.getId()))
+                    throw new IllegalStateException("User does not have permission to move this file");
+
+                file.setDirectory(parentDir);
+            }
+        }
+        return BasicResponse.builder().message("Successfully moved contents").build();
     }
 }
