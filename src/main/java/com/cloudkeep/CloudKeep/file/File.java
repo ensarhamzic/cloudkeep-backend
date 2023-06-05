@@ -9,15 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-        name = "files",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "file_name_unique",
-                        columnNames = {"name", "owner_id", "directory_id"}
-                )
-        }
-    )
+@Table(name = "files")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

@@ -40,9 +40,6 @@ public class DirectoryService {
                         parentDir == null ? null : parentDir.getId()
                 );
         String dirName = request.getName().toLowerCase().trim();
-        if(currentDirs.stream().anyMatch(directory -> directory.getName().equals(dirName)))
-            throw new IllegalStateException("You already have a directory with this name");
-
 
         // If every validation succeed, create the directory
         Directory directory = Directory.builder()
