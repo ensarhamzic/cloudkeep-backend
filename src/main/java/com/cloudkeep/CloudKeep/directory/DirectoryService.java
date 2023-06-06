@@ -7,6 +7,8 @@ import com.cloudkeep.CloudKeep.directory.responses.GetDirectoriesResponse;
 import com.cloudkeep.CloudKeep.file.FileDTO;
 import com.cloudkeep.CloudKeep.file.FileDTOMapper;
 import com.cloudkeep.CloudKeep.file.FileRepository;
+import com.cloudkeep.CloudKeep.shared.SharedDirectoryRepository;
+import com.cloudkeep.CloudKeep.shared.SharedFileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import java.util.List;
 @Transactional
 public class DirectoryService {
     private final DirectoryRepository directoryRepository;
+    private final SharedDirectoryRepository sharedDirectoryRepository;
+    private final SharedFileRepository sharedFileRepository;
     private final DirectoryDTOMapper directoryDTOMapper;
     private final FileRepository fileRepository;
     private final FileDTOMapper fileDTOMapper;
@@ -57,13 +61,13 @@ public class DirectoryService {
                 .build();
     }
 
-    public GetDirectoriesResponse getDirectories(String token, Long directoryId, Boolean favorite) {
+    public GetDirectoriesResponse getDirectories(String token, Long directoryId, Boolean favorite, Boolean shared) {
         Long userId = jwtService.extractId(token);
         Directory currentDirectory = null;
         if(directoryId != null) {
             currentDirectory = directoryRepository.findById(directoryId).orElse(null);
-            if(currentDirectory != null && !currentDirectory.getOwner().getId().equals(userId))
-                throw new IllegalStateException("You can't access a directory that doesn't belong to you");
+//            if(currentDirectory != null && !currentDirectory.getOwner().getId().equals(userId))
+//                throw new IllegalStateException("You can't access this directory");
         }
 
         List<DirectoryDTO> directories;
@@ -72,9 +76,17 @@ public class DirectoryService {
         if (directoryId == null && favorite) {
             directories = directoryRepository.findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(userId).stream().map(directoryDTOMapper).toList();
             files = fileRepository.findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(userId).stream().map(fileDTOMapper).toList();
-        } else {
-            directories = directoryRepository.findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(directoryDTOMapper).toList();
-            files = fileRepository.findAllByOwner_IdAndDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(fileDTOMapper).toList();
+        }
+        else if(directoryId == null && shared) {
+            var sharedDirectories = sharedDirectoryRepository.findAllByUser_IdAndDirectory_DeletedFalse(userId);
+            var sharedFiles = sharedFileRepository.findAllByUser_IdAndFile_DeletedFalse(userId);
+            directories = sharedDirectories.stream().map(d -> directoryDTOMapper.apply(d.getDirectory())).toList();
+            files = sharedFiles.stream().map(f -> fileDTOMapper.apply(f.getFile())).toList();
+        }
+        else {
+            var ownerId = currentDirectory != null ? currentDirectory.getOwner().getId() : userId;
+            directories = directoryRepository.findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(ownerId, directoryId).stream().map(directoryDTOMapper).toList();
+            files = fileRepository.findAllByOwner_IdAndDirectory_IdAndDeletedFalse(ownerId, directoryId).stream().map(fileDTOMapper).toList();
         }
 
         return GetDirectoriesResponse.builder()

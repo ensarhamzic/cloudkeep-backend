@@ -19,9 +19,10 @@ public class DirectoryController {
     public ResponseEntity<GetDirectoriesResponse> getDirectories(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
             @RequestParam(required = false) Long directoryId,
-            @RequestParam(required = false) Boolean favorite
+            @RequestParam(required = false) Boolean favorite,
+            @RequestParam(required = false) Boolean shared
     ) {
-        return ResponseEntity.ok(directoryService.getDirectories(token, directoryId, favorite));
+        return ResponseEntity.ok(directoryService.getDirectories(token, directoryId, favorite, shared));
     }
 
     @PostMapping
