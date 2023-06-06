@@ -9,17 +9,17 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class DirectoryDTOMapper implements Function<Directory, DirectoryDTO> {
-
-    private final FileDTOMapper fileDTOMapper;
-
     @Override
     public DirectoryDTO apply(Directory directory) {
+        boolean shared = directory.getSharedUsers() != null && directory.getSharedUsers().size() > 0;
+
         return new DirectoryDTO(
                 directory.getId(),
                 directory.getName(),
                 directory.getParentDirectory() != null ? directory.getParentDirectory().getId() : null,
                 directory.getFavorite(),
-                directory.getOwner().getId()
+                directory.getOwner().getId(),
+                shared
         );
     }
 }

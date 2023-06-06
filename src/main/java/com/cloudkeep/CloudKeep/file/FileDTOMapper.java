@@ -8,6 +8,7 @@ import java.util.function.Function;
 public class FileDTOMapper implements Function<File, FileDTO> {
     @Override
     public FileDTO apply(File file) {
+        boolean shared = file.getSharedUsers() != null && file.getSharedUsers().size() > 0;
         return new FileDTO(
                 file.getId(),
                 file.getName(),
@@ -15,7 +16,8 @@ public class FileDTOMapper implements Function<File, FileDTO> {
                 file.getType(),
                 file.getFavorite(),
                 file.getOwner().getId(),
-                file.getDirectory() != null ? file.getDirectory().getId() : null
+                file.getDirectory() != null ? file.getDirectory().getId() : null,
+                shared
         );
     }
 }

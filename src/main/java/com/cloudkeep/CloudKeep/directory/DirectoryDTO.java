@@ -9,5 +9,6 @@ public record DirectoryDTO(
         String name,
         Long parentDirectoryId,
         Boolean favorite,
-        Long ownerId
+        Long ownerId,
+        Boolean shared
         ) { }
