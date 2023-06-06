@@ -3,7 +3,10 @@ package com.cloudkeep.CloudKeep.content;
 import com.cloudkeep.CloudKeep.content.requests.ContentsRequest;
 import com.cloudkeep.CloudKeep.content.requests.MoveContentsRequest;
 import com.cloudkeep.CloudKeep.content.requests.RenameContentRequest;
+import com.cloudkeep.CloudKeep.content.requests.ShareContentRequest;
+import com.cloudkeep.CloudKeep.content.requests.helpers.ContentType;
 import com.cloudkeep.CloudKeep.content.responses.RenameContentResponse;
+import com.cloudkeep.CloudKeep.content.responses.SharedUsersResponse;
 import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,4 +52,20 @@ public class ContentController {
        return ResponseEntity.ok(contentService.moveContent(token, request));
     }
 
+    @PostMapping("/shared")
+    public ResponseEntity<BasicResponse> shareContent(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+            @Valid @RequestBody ShareContentRequest request
+    ) {
+        return ResponseEntity.ok(contentService.shareContent(token, request));
+    }
+
+    @GetMapping("/shared")
+    public ResponseEntity<SharedUsersResponse> getSharedUsers(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+            @RequestParam Long contentId,
+            @RequestParam ContentType contentType
+            ) {
+        return ResponseEntity.ok(contentService.getSharedUsers(token, contentId, contentType));
+    }
 }

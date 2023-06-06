@@ -1,6 +1,7 @@
 package com.cloudkeep.CloudKeep.directory;
 
 import com.cloudkeep.CloudKeep.file.File;
+import com.cloudkeep.CloudKeep.shared.SharedDirectory;
 import com.cloudkeep.CloudKeep.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -60,6 +61,14 @@ public class Directory {
     @Cascade(org.hibernate.annotations.CascadeType.DELETE)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<File> files;
+
+    @OneToMany(
+            mappedBy = "directory",
+            cascade = CascadeType.ALL
+    )
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<SharedDirectory> sharedUsers;
 
     @ManyToOne(
             optional = false,

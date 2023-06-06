@@ -1,12 +1,18 @@
 package com.cloudkeep.CloudKeep.file;
 
 import com.cloudkeep.CloudKeep.directory.Directory;
+import com.cloudkeep.CloudKeep.shared.SharedFile;
 import com.cloudkeep.CloudKeep.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.util.List;
 
 @Entity
 @Table(name = "files")
@@ -59,4 +65,12 @@ public class File {
             referencedColumnName = "id"
     )
     private Directory directory;
+
+    @OneToMany(
+            mappedBy = "file",
+            cascade = CascadeType.ALL
+    )
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<SharedFile> sharedUsers;
 }
