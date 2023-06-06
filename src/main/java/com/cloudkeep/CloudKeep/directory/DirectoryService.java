@@ -77,7 +77,6 @@ public class DirectoryService {
             files = fileRepository.findAllByOwner_IdAndDirectory_IdAndDeletedFalse(userId, directoryId).stream().map(fileDTOMapper).toList();
         }
 
-
         return GetDirectoriesResponse.builder()
                 .currentDirectory(currentDirectory != null ? directoryDTOMapper.apply(currentDirectory) : null)
                 .directories(directories)
