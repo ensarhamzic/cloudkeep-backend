@@ -12,6 +12,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -40,6 +41,12 @@ public class File {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FileType type;
+
+    @Column(nullable = false)
+    private Date dateCreated;
+
+    @Column(nullable = false)
+    private Date dateModified;
 
     @Column(nullable = false)
     private Boolean favorite;

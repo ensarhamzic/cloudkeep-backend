@@ -9,6 +9,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -30,6 +31,12 @@ public class Directory {
 
     @Column(nullable = false, length = 256)
     private String name;
+
+    @Column(nullable = false)
+    private Date dateCreated;
+
+    @Column(nullable = false)
+    private Date dateModified;
 
     @Column(nullable = false)
     private Boolean favorite;

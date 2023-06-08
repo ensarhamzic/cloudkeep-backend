@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -37,22 +38,20 @@ public class DirectoryService {
                 );
         }
 
-        // Check if the user already has a directory in the same directory with the same name
-        var currentDirs = directoryRepository
-                .findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(
-                        user.getId(),
-                        parentDir == null ? null : parentDir.getId()
-                );
         String dirName = request.getName().toLowerCase().trim();
 
         // If every validation succeed, create the directory
         Directory directory = Directory.builder()
                 .name(dirName)
+                .dateCreated(new Date())
+                .dateModified(new Date())
                 .owner(user)
                 .parentDirectory(parentDir)
                 .favorite(false)
                 .deleted(false)
                 .build();
+        if(parentDir != null)
+            parentDir.setDateModified(new Date());
         directoryRepository.save(directory);
 
         return CreateDirectoryResponse.builder()

@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -93,6 +94,7 @@ public class ContentService {
                 throw new IllegalStateException("You already have a directory with this name");
 
             directory.setName(request.getName());
+            directory.setDateModified(new Date());
         } else {
             var file = fileRepository.findById(request.getId()).orElseThrow(
                     () -> new IllegalStateException("File not found")
@@ -119,6 +121,7 @@ public class ContentService {
 
             newName = fileNameRef.get();
             file.setName(fileNameRef.get());
+            file.setDateModified(new Date());
         }
         return RenameContentResponse
                 .builder()

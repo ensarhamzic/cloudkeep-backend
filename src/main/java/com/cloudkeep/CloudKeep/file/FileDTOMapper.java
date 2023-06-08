@@ -13,6 +13,8 @@ public class FileDTOMapper implements Function<File, FileDTO> {
                 file.getId(),
                 file.getName(),
                 file.getPath(),
+                file.getDateCreated(),
+                file.getDateModified(),
                 file.getType(),
                 file.getFavorite(),
                 file.getOwner().getId(),

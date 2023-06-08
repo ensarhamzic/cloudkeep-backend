@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -57,6 +58,8 @@ public class FileService {
                     .name(fileNameRef.get())
                     .path(file.getPath())
                     .type(file.getType())
+                    .dateCreated(new Date())
+                    .dateModified(new Date())
                     .owner(user)
                     .directory(directory)
                     .favorite(false)
@@ -66,6 +69,8 @@ public class FileService {
 
             fileRepository.save(newFile);
         }
+        if(directory != null)
+            directory.setDateModified(new Date());
 
         return FilesUploadResponse.builder()
                 .message("Files uploaded successfully")
