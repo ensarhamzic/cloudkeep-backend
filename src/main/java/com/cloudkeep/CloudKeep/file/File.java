@@ -56,6 +56,9 @@ public class File {
 
     private Date dateDeleted;
 
+    @Column(nullable = false)
+    private Long size;
+
     @ManyToOne(
             optional = false,
             cascade = CascadeType.ALL

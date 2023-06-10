@@ -14,4 +14,7 @@ public class UploadedFile {
 
     @NotNull(message = "Type cannot be null")
     private FileType type;
+
+    @NotNull(message = "Size cannot be null")
+    private Long size;
 }

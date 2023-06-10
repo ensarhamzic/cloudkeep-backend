@@ -1,6 +1,7 @@
 package com.cloudkeep.CloudKeep.file;
 
 import com.cloudkeep.CloudKeep.file.requests.FilesUploadRequest;
+import com.cloudkeep.CloudKeep.file.responses.FilesSizeResponse;
 import com.cloudkeep.CloudKeep.file.responses.FilesUploadResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +21,12 @@ public class FileController {
         @RequestHeader("Authorization") String token
     ) {
         return ResponseEntity.ok(fileService.uploadFile(token, request));
+    }
+
+    @GetMapping(path = "/files/size")
+    public ResponseEntity<FilesSizeResponse> getFilesSize(
+        @RequestHeader("Authorization") String token
+    ) {
+        return ResponseEntity.ok(fileService.getFilesSize(token));
     }
 }

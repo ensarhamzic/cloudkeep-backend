@@ -5,6 +5,7 @@ import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.directory.DirectoryRepository;
 import com.cloudkeep.CloudKeep.file.requests.FilesUploadRequest;
 import com.cloudkeep.CloudKeep.file.requests.helpers.UploadedFile;
+import com.cloudkeep.CloudKeep.file.responses.FilesSizeResponse;
 import com.cloudkeep.CloudKeep.file.responses.FilesUploadResponse;
 import com.cloudkeep.CloudKeep.user.User;
 import jakarta.transaction.Transactional;
@@ -58,6 +59,7 @@ public class FileService {
                     .name(fileNameRef.get())
                     .path(file.getPath())
                     .type(file.getType())
+                    .size(file.getSize())
                     .dateCreated(new Date())
                     .dateModified(new Date())
                     .owner(user)
@@ -75,6 +77,18 @@ public class FileService {
         return FilesUploadResponse.builder()
                 .message("Files uploaded successfully")
                 .data(files.stream().map(fileDTOMapper).toList())
+                .build();
+    }
+
+    public FilesSizeResponse getFilesSize(String token) {
+        User user = jwtService.getUserFromToken(token);
+        var files = fileRepository.findAllByOwner_IdAndDeletedFalse(user.getId());
+        Long size = 0L;
+        for(File file : files)
+            size += file.getSize();
+        return FilesSizeResponse.builder()
+                .size(size)
+                .storageLimit(1073741824L)
                 .build();
     }
 }
