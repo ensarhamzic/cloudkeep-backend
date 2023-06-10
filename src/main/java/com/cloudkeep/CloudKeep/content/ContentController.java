@@ -21,12 +21,13 @@ import org.springframework.web.bind.annotation.*;
 public class ContentController {
     private final ContentService contentService;
 
-    @PostMapping()
+    @PostMapping("/delete")
     public ResponseEntity<BasicResponse> deleteContent(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-            @Valid @RequestBody ContentsRequest request
+            @Valid @RequestBody ContentsRequest request,
+            @RequestParam Boolean permanent
     ) {
-       return ResponseEntity.ok(contentService.deleteContent(token, request));
+       return ResponseEntity.ok(contentService.deleteContent(token, request, permanent));
     }
 
     @PutMapping()
@@ -71,10 +72,25 @@ public class ContentController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<GetDirectoriesResponse> getSearchedDirectories(
+    public ResponseEntity<GetDirectoriesResponse> getSearchedContents(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
             @RequestParam String query
             ) {
         return ResponseEntity.ok(contentService.searchContents(token, query));
+    }
+
+    @GetMapping("/trash")
+    public ResponseEntity<GetDirectoriesResponse> getDeletedContents(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token
+    ) {
+        return ResponseEntity.ok(contentService.getDeletedContents(token));
+    }
+
+    @PostMapping("/restore")
+    public ResponseEntity<BasicResponse> restoreContent(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+            @Valid @RequestBody ContentsRequest request
+    ) {
+       return ResponseEntity.ok(contentService.restoreContent(token, request));
     }
 }

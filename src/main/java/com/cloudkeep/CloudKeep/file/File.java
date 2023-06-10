@@ -54,6 +54,8 @@ public class File {
     @Column(nullable = false)
     private Boolean deleted;
 
+    private Date dateDeleted;
+
     @ManyToOne(
             optional = false,
             cascade = CascadeType.ALL

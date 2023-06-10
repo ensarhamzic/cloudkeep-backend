@@ -44,6 +44,8 @@ public class Directory {
     @Column(nullable = false)
     private Boolean deleted;
 
+    private Date dateDeleted;
+
     @ManyToOne(
             cascade = CascadeType.ALL
     )

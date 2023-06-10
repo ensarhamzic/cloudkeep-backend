@@ -13,6 +13,7 @@ import com.cloudkeep.CloudKeep.directory.Directory;
 import com.cloudkeep.CloudKeep.directory.DirectoryDTOMapper;
 import com.cloudkeep.CloudKeep.directory.DirectoryRepository;
 import com.cloudkeep.CloudKeep.directory.responses.GetDirectoriesResponse;
+import com.cloudkeep.CloudKeep.file.File;
 import com.cloudkeep.CloudKeep.file.FileDTOMapper;
 import com.cloudkeep.CloudKeep.file.FileRepository;
 import com.cloudkeep.CloudKeep.shared.SharedDirectory;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -46,9 +48,11 @@ public class ContentService {
     private final DirectoryDTOMapper directoryDTOMapper;
     private final FileDTOMapper fileDTOMapper;
 
-    public BasicResponse deleteContent(String token, ContentsRequest request) {
+    public BasicResponse deleteContent(String token, ContentsRequest request, Boolean permanent) {
         var user = jwtService.getUserFromToken(token);
 
+        List<Directory> directoriesToDelete = new ArrayList<>();
+        List<File> filesToDelete = new ArrayList<>();
         for (OneContent content: request.getContents()) {
             if (content.getType().equals(ContentType.DIRECTORY)) {
                 var directory = directoryRepository.findById(content.getId()).orElseThrow(
@@ -56,15 +60,23 @@ public class ContentService {
                 );
                 if (!directory.getOwner().getId().equals(user.getId()))
                     throw new IllegalStateException("User does not have permission to delete this directory");
+                directoriesToDelete.add(directory);
                 directory.setDeleted(true);
+                directory.setDateDeleted(new Date());
             } else {
                 var file = fileRepository.findById(content.getId()).orElseThrow(
                         () -> new IllegalStateException("File not found")
                 );
                 if (!file.getOwner().getId().equals(user.getId()))
                     throw new IllegalStateException("User does not have permission to delete this file");
+                filesToDelete.add(file);
                 file.setDeleted(true);
+                file.setDateDeleted(new Date());
             }
+        }
+        if(permanent) {
+            directoryRepository.deleteAllInBatch(directoriesToDelete);
+            fileRepository.deleteAllInBatch(filesToDelete);
         }
         return BasicResponse.builder().message("Successfully deleted contents").build();
     }
@@ -300,5 +312,63 @@ public class ContentService {
                 .directories(directories.stream().map(directoryDTOMapper).toList())
                 .files(files.stream().map(fileDTOMapper).toList())
                 .build();
+    }
+
+    public GetDirectoriesResponse getDeletedContents(String token) {
+        var user = jwtService.getUserFromToken(token);
+        var directories = directoryRepository.findAllByOwner_IdAndDeletedTrue(user.getId());
+        var files = fileRepository.findAllByOwner_IdAndDeletedTrue(user.getId());
+        // get all directories whose deletedDate is more than 30 days ago
+        var directoriesToDelete = directories.stream().filter(directory -> {
+            var now = new Date();
+            var deletedDate = directory.getDateDeleted();
+            var diff = now.getTime() - deletedDate.getTime();
+            var days = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+            return days > 30;
+        }).toList();
+        // get all files whose deletedDate is more than 30 days ago
+        var filesToDelete = files.stream().filter(file -> {
+            var now = new Date();
+            var deletedDate = file.getDateDeleted();
+            var diff = now.getTime() - deletedDate.getTime();
+            var days = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+            return days > 30;
+        }).toList();
+        // delete all directories and files whose deletedDate is more than 30 days ago
+        directoryRepository.deleteAllInBatch(directoriesToDelete);
+        fileRepository.deleteAllInBatch(filesToDelete);
+        // get all directories and files that are deleted
+        directories = directoryRepository.findAllByOwner_IdAndDeletedTrue(user.getId());
+        files = fileRepository.findAllByOwner_IdAndDeletedTrue(user.getId());
+        return GetDirectoriesResponse.builder()
+                .directories(directories.stream().map(directoryDTOMapper).toList())
+                .files(files.stream().map(fileDTOMapper).toList())
+                .build();
+    }
+
+    public BasicResponse restoreContent(String token, ContentsRequest request) {
+        var user = jwtService.getUserFromToken(token);
+        for (OneContent content : request.getContents()) {
+            if (content.getType().equals(ContentType.DIRECTORY)) {
+                var directory = directoryRepository.findById(content.getId()).orElseThrow(
+                        () -> new IllegalStateException("Directory not found")
+                );
+                if (!directory.getOwner().getId().equals(user.getId()))
+                    throw new IllegalStateException("User does not have permission to restore this directory");
+                directory.setDeleted(false);
+                directory.setDateDeleted(null);
+                directoryRepository.save(directory);
+            } else {
+                var file = fileRepository.findById(content.getId()).orElseThrow(
+                        () -> new IllegalStateException("File not found")
+                );
+                if (!file.getOwner().getId().equals(user.getId()))
+                    throw new IllegalStateException("User does not have permission to restore this file");
+                file.setDeleted(false);
+                file.setDateDeleted(null);
+                fileRepository.save(file);
+            }
+        }
+        return BasicResponse.builder().message("Successfully restored content").build();
     }
 }
