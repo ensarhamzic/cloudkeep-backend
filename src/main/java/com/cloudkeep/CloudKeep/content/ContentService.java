@@ -10,7 +10,10 @@ import com.cloudkeep.CloudKeep.content.requests.helpers.OneContent;
 import com.cloudkeep.CloudKeep.content.responses.RenameContentResponse;
 import com.cloudkeep.CloudKeep.content.responses.SharedUsersResponse;
 import com.cloudkeep.CloudKeep.directory.Directory;
+import com.cloudkeep.CloudKeep.directory.DirectoryDTOMapper;
 import com.cloudkeep.CloudKeep.directory.DirectoryRepository;
+import com.cloudkeep.CloudKeep.directory.responses.GetDirectoriesResponse;
+import com.cloudkeep.CloudKeep.file.FileDTOMapper;
 import com.cloudkeep.CloudKeep.file.FileRepository;
 import com.cloudkeep.CloudKeep.shared.SharedDirectory;
 import com.cloudkeep.CloudKeep.shared.SharedDirectoryRepository;
@@ -40,6 +43,8 @@ public class ContentService {
     private final SharedDirectoryRepository sharedDirectoryRepository;
     private final SharedFileRepository sharedFileRepository;
     private final UserDTOMapper userDTOMapper;
+    private final DirectoryDTOMapper directoryDTOMapper;
+    private final FileDTOMapper fileDTOMapper;
 
     public BasicResponse deleteContent(String token, ContentsRequest request) {
         var user = jwtService.getUserFromToken(token);
@@ -285,5 +290,15 @@ public class ContentService {
             }
         }
         return SharedUsersResponse.builder().users(sharedUsers.stream().map(userDTOMapper).toList()).build();
+    }
+
+    public GetDirectoriesResponse searchContents(String token, String query) {
+        var user = jwtService.getUserFromToken(token);
+        var directories = directoryRepository.findAllByOwner_IdAndNameContainingAndDeletedFalse(user.getId(), query);
+        var files = fileRepository.findAllByOwner_IdAndNameContainingAndDeletedFalse(user.getId(), query);
+        return GetDirectoriesResponse.builder()
+                .directories(directories.stream().map(directoryDTOMapper).toList())
+                .files(files.stream().map(fileDTOMapper).toList())
+                .build();
     }
 }

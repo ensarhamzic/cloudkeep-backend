@@ -7,6 +7,7 @@ import com.cloudkeep.CloudKeep.content.requests.ShareContentRequest;
 import com.cloudkeep.CloudKeep.content.requests.helpers.ContentType;
 import com.cloudkeep.CloudKeep.content.responses.RenameContentResponse;
 import com.cloudkeep.CloudKeep.content.responses.SharedUsersResponse;
+import com.cloudkeep.CloudKeep.directory.responses.GetDirectoriesResponse;
 import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -67,5 +68,13 @@ public class ContentController {
             @RequestParam ContentType contentType
             ) {
         return ResponseEntity.ok(contentService.getSharedUsers(token, contentId, contentType));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<GetDirectoriesResponse> getSearchedDirectories(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+            @RequestParam String query
+            ) {
+        return ResponseEntity.ok(contentService.searchContents(token, query));
     }
 }

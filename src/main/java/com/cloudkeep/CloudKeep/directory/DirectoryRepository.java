@@ -12,4 +12,6 @@ public interface DirectoryRepository extends JpaRepository<Directory, Long> {
     List<Directory> findAllByOwner_Id(Long id);
     List<Directory> findAllByOwner_IdAndFavoriteTrueAndDeletedFalse(Long id);
     List<Directory> findAllByOwner_IdAndParentDirectory_IdAndDeletedFalse(Long ownerId, Long parentId);
+
+    List<Directory> findAllByOwner_IdAndNameContainingAndDeletedFalse(Long id, String query);
 }

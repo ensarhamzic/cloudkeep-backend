@@ -65,6 +65,7 @@ public class DirectoryService {
         Directory currentDirectory = null;
         if(directoryId != null) {
             currentDirectory = directoryRepository.findById(directoryId).orElse(null);
+//            TODO: Make sure the user has access to this directory if it is not his but shared with him
 //            if(currentDirectory != null && !currentDirectory.getOwner().getId().equals(userId))
 //                throw new IllegalStateException("You can't access this directory");
         }
