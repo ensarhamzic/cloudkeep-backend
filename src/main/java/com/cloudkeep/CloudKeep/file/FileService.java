@@ -10,6 +10,7 @@ import com.cloudkeep.CloudKeep.file.responses.FilesUploadResponse;
 import com.cloudkeep.CloudKeep.user.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ public class FileService {
     private final JwtService jwtService;
     private final FileRepository fileRepository;
     private final DirectoryRepository directoryRepository;
+
+    @Value("${storage.limit}")
+    private Long storageLimit;
     public FilesUploadResponse uploadFile(String token, FilesUploadRequest request) {
         User user = jwtService.getUserFromToken(token);
         Directory directory = null;
@@ -36,6 +40,11 @@ public class FileService {
         if(directory != null)
             if(!directory.getOwner().getId().equals(user.getId()))
                 throw new IllegalStateException("You can't upload a file to a directory that doesn't belong to you");
+
+        Long filesSize = getFilesSizeForUser(user);
+        filesSize = filesSize + request.getFiles().stream().mapToLong(UploadedFile::getSize).sum();
+        if(filesSize > storageLimit)
+            throw new IllegalStateException("You don't have enough storage space");
 
         var filesInDir = fileRepository
                 .findAllByOwner_IdAndDirectory_IdAndDeletedFalse(
@@ -82,13 +91,18 @@ public class FileService {
 
     public FilesSizeResponse getFilesSize(String token) {
         User user = jwtService.getUserFromToken(token);
-        var files = fileRepository.findAllByOwner_IdAndDeletedFalse(user.getId());
+        Long size = getFilesSizeForUser(user);
+        return FilesSizeResponse.builder()
+                .size(size)
+                .storageLimit(storageLimit)
+                .build();
+    }
+
+    private Long getFilesSizeForUser(User user) {
+        var files = fileRepository.findAllByOwner_Id(user.getId());
         Long size = 0L;
         for(File file : files)
             size += file.getSize();
-        return FilesSizeResponse.builder()
-                .size(size)
-                .storageLimit(1073741824L)
-                .build();
+        return size;
     }
 }
