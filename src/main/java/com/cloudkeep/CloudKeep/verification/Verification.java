@@ -26,7 +26,12 @@ public class Verification {
             strategy = GenerationType.SEQUENCE,
             generator = "verification_sequence")
     private Long id;
+
+    @Column(nullable = false)
     private String code;
+
+    @Column(nullable = false)
+    private VerificationType type;
 
     @ManyToOne(
             optional = false

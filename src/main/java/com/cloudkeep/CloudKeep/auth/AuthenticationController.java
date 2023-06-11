@@ -1,8 +1,11 @@
 package com.cloudkeep.CloudKeep.auth;
 
+import com.cloudkeep.CloudKeep.auth.requests.ForgotPasswordRequest;
 import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
 import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
+import com.cloudkeep.CloudKeep.auth.requests.ResetPasswordRequest;
 import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
+import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
 import com.cloudkeep.CloudKeep.verification.requests.VerificationRequest;
 import com.mailjet.client.errors.MailjetException;
 import jakarta.validation.Valid;
@@ -41,5 +44,15 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> verifyToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
         AuthenticationResponse response = service.verifyToken(authHeader);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<BasicResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) throws MailjetException {
+        return ResponseEntity.ok(service.forgotPassword(request.getEmail()));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<BasicResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) throws MailjetException {
+        return ResponseEntity.ok(service.resetPassword(request));
     }
 }

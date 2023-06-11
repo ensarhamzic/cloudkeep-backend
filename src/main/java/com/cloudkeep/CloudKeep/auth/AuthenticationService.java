@@ -2,14 +2,17 @@ package com.cloudkeep.CloudKeep.auth;
 
 import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
 import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
+import com.cloudkeep.CloudKeep.auth.requests.ResetPasswordRequest;
 import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
 import com.cloudkeep.CloudKeep.config.JwtService;
 import com.cloudkeep.CloudKeep.user.User;
 import com.cloudkeep.CloudKeep.user.UserDTO;
 import com.cloudkeep.CloudKeep.user.UserDTOMapper;
 import com.cloudkeep.CloudKeep.user.UserRepository;
+import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
 import com.cloudkeep.CloudKeep.verification.Verification;
 import com.cloudkeep.CloudKeep.verification.VerificationRepository;
+import com.cloudkeep.CloudKeep.verification.VerificationType;
 import com.cloudkeep.CloudKeep.verification.requests.VerificationRequest;
 import com.mailjet.client.ClientOptions;
 import com.mailjet.client.MailjetClient;
@@ -97,6 +100,8 @@ public class AuthenticationService {
         if(verificationOptional.isEmpty())
             throw new IllegalStateException("Invalid code");
         var verification = verificationOptional.get();
+        if(verification.getType() != VerificationType.EMAIL_VERIFICATION)
+            throw new IllegalStateException("Invalid code");
         var user = verification.getUser();
         var now = LocalDateTime.now();
         var oneDayAgo = now.minusDays(1);
@@ -135,6 +140,7 @@ public class AuthenticationService {
         var verification = Verification.builder()
                 .user(user)
                 .code(code.toString())
+                .type(VerificationType.EMAIL_VERIFICATION)
                 .build();
         verificationRepository.save(verification);
 
@@ -149,12 +155,83 @@ public class AuthenticationService {
                 .builder()
                 .to(new SendContact(user.getEmail(), String.format("%s %s", user.getFirstName(), user.getLastName())))
                 .from(new SendContact("ensarhamzic01@gmail.com", "CloudKeep Team"))
-                .htmlPart("<h1>Please enter the code in your app</h1><p>Your code: " + code + "</p>")
+                .htmlPart("<h1>Please enter the code in your app</h1><p>Your code: " + code + "</p><p>Code expires in 15 minutes</p>")
                 .subject("Email verification")
                 .trackOpens(TrackOpens.ENABLED)
                 .build();
 
         SendEmailsRequest emailRequest = SendEmailsRequest.builder().message(email).build();
         emailRequest.sendWith(client);
+    }
+
+    @Transactional
+    private void sendPasswordResetEmail(User user) throws MailjetException {
+        var rand = new SecureRandom();
+        StringBuilder code = new StringBuilder();
+        for (int i = 0; i < 6; i++)
+            code.append(rand.nextInt(10));
+        var verification = Verification.builder()
+                .user(user)
+                .code(code.toString())
+                .type(VerificationType.PASSWORD_RESET)
+                .build();
+        verificationRepository.save(verification);
+
+        ClientOptions options = ClientOptions.builder()
+                .apiKey(mailjetApiKey)
+                .apiSecretKey(mailjetApiSecret)
+                .build();
+
+        MailjetClient client = new MailjetClient(options);
+
+        TransactionalEmail email = TransactionalEmail
+                .builder()
+                .to(new SendContact(user.getEmail(), String.format("%s %s", user.getFirstName(), user.getLastName())))
+                .from(new SendContact("ensarhamzic01@gmail.com", "CloudKeep Team"))
+                .htmlPart("<h1>Please enter the code in your app to reset your password</h1><p>Your code: " + code + "</p><p>Code expires in 15 minutes</p>")
+                .subject("Password Reset")
+                .trackOpens(TrackOpens.ENABLED)
+                .build();
+
+        SendEmailsRequest emailRequest = SendEmailsRequest.builder().message(email).build();
+        emailRequest.sendWith(client);
+    }
+
+    public BasicResponse forgotPassword(String email) throws MailjetException {
+        var user = userRepository.findByEmail(email).orElseThrow(
+                () -> new IllegalStateException("User with this email does not exist")
+        );
+        sendPasswordResetEmail(user);
+
+        return BasicResponse.builder()
+                .message("Email sent")
+                .build();
+    }
+
+    public BasicResponse resetPassword(ResetPasswordRequest request) {
+        var verificationOptional = verificationRepository.findByCodeAndUserEmail(request.getCode(), request.getEmail());
+        if(verificationOptional.isEmpty())
+            throw new IllegalStateException("Invalid code");
+        var verification = verificationOptional.get();
+        if(verification.getType() != VerificationType.PASSWORD_RESET)
+            throw new IllegalStateException("Invalid code");
+        var user = verification.getUser();
+        var now = LocalDateTime.now();
+        var oneDayAgo = now.minusDays(1);
+        long minutesDifference = ChronoUnit.MINUTES.between(verification.getCreatedAt(), LocalDateTime.now());
+        if(minutesDifference > 15)
+            throw new IllegalStateException("Code expired");
+
+        entityManager.createQuery("DELETE FROM Verification t WHERE t.createdAt < :dayAgo")
+                .setParameter("dayAgo", oneDayAgo)
+                .executeUpdate();
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+        verificationRepository.delete(verification);
+
+        return BasicResponse.builder()
+                .message("Password reset")
+                .build();
     }
 }
