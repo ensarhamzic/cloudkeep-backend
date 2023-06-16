@@ -1,6 +1,7 @@
 package com.cloudkeep.CloudKeep.content;
 
 import com.cloudkeep.CloudKeep.config.JwtService;
+import com.cloudkeep.CloudKeep.config.firebase.FirebaseStorageStrategy;
 import com.cloudkeep.CloudKeep.content.requests.ContentsRequest;
 import com.cloudkeep.CloudKeep.content.requests.MoveContentsRequest;
 import com.cloudkeep.CloudKeep.content.requests.RenameContentRequest;
@@ -47,6 +48,7 @@ public class ContentService {
     private final UserDTOMapper userDTOMapper;
     private final DirectoryDTOMapper directoryDTOMapper;
     private final FileDTOMapper fileDTOMapper;
+    private final FirebaseStorageStrategy firebaseStorageStrategy;
 
     public BasicResponse deleteContent(String token, ContentsRequest request, Boolean permanent) {
         var user = jwtService.getUserFromToken(token);
@@ -75,6 +77,15 @@ public class ContentService {
             }
         }
         if(permanent) {
+            for(File file: filesToDelete)
+                firebaseStorageStrategy.deleteFile(file.getPath());
+
+            for(Directory directory: directoriesToDelete) {
+                var files = directory.getFiles();
+                for(File file: files)
+                    firebaseStorageStrategy.deleteFile(file.getPath());
+            }
+
             directoryRepository.deleteAllInBatch(directoriesToDelete);
             fileRepository.deleteAllInBatch(filesToDelete);
         }
@@ -335,6 +346,14 @@ public class ContentService {
             return days > 30;
         }).toList();
         // delete all directories and files whose deletedDate is more than 30 days ago
+        for(File file: filesToDelete)
+            firebaseStorageStrategy.deleteFile(file.getPath());
+
+        for (Directory directory: directoriesToDelete)
+            for (File file: directory.getFiles())
+                firebaseStorageStrategy.deleteFile(file.getPath());
+
+
         directoryRepository.deleteAllInBatch(directoriesToDelete);
         fileRepository.deleteAllInBatch(filesToDelete);
         // get all directories and files that are deleted
