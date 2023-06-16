@@ -74,52 +74,8 @@ public class FirebaseStorageStrategy {
         Storage storage = storageOptions.getService();
         storage.create(blobInfo, bytes);
         return storage.create(blobInfo, bytes);
-//        File file = convertMultiPartToFile(multipartFile);
-//        Path filePath = file.toPath();
-//        String objectName = generateFileName(multipartFile);
-//
-//        Storage storage = storageOptions.getService();
-//
-//        BlobId blobId = BlobId.of(bucketName, objectName);
-//        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-
-//        return storage.create(blobInfo, Files.readAllBytes(filePath));
     }
 
-//    public ResponseEntity<Object> downloadFile(String fileName) throws Exception {
-//        Storage storage = storageOptions.getService();
-//
-//        Blob blob = storage.get(BlobId.of(bucketName, fileName));
-//        ReadChannel reader = blob.reader();
-//        InputStream inputStream = Channels.newInputStream(reader);
-//
-//        byte[] content = null;
-//        log.info("File downloaded successfully.");
-//
-//        content = IOUtils.toByteArray(inputStream);
-//
-//        final ByteArrayResource byteArrayResource = new ByteArrayResource(content);
-//
-//        return ResponseEntity
-//                .ok()
-//                .contentLength(content.length)
-//                .header("Content-type", "application/octet-stream")
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-//                .body(byteArrayResource);
-//    }
-
-
-//    private File convertMultiPartToFile(MultipartFile file) throws IOException {
-//        File convertedFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
-//        FileOutputStream fos = new FileOutputStream(convertedFile);
-//        fos.write(file.getBytes());
-//        fos.close();
-//        return convertedFile;
-//    }
-//
-//    private String generateFileName(MultipartFile multiPart) {
-//        return new Date().getTime() + "-" + Objects.requireNonNull(multiPart.getOriginalFilename()).replace(" ", "_");
-//    }
 
     private InputStream createFirebaseCredential() throws Exception {
         FirebaseCredential firebaseCredential = FirebaseCredential.builder()
@@ -139,5 +95,11 @@ public class FirebaseStorageStrategy {
         String jsonString = mapper.writeValueAsString(firebaseCredential);
 
         return IOUtils.toInputStream(jsonString);
+    }
+
+    public void deleteFile(String fileName) {
+        Storage storage = storageOptions.getService();
+        BlobId blobId = BlobId.of(bucketName, fileName);
+        storage.delete(blobId);
     }
 }

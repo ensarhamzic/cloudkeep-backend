@@ -1,7 +1,9 @@
 package com.cloudkeep.CloudKeep.user;
 
+import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
 import com.cloudkeep.CloudKeep.user.requests.UpdateUserRequest;
 import com.cloudkeep.CloudKeep.user.responses.SearchUsersResponse;
+import com.cloudkeep.CloudKeep.user.responses.UpdateUserResponse;
 import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +25,7 @@ public class UserController {
     }
 
     @PutMapping()
-    public ResponseEntity<BasicResponse> updateUser(
+    public ResponseEntity<UpdateUserResponse> updateUser(
             @Valid @RequestBody UpdateUserRequest request,
             @RequestHeader("Authorization") String token
     ) {
