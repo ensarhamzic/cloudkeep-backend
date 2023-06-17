@@ -47,6 +47,8 @@ public class User implements UserDetails {
 
     private Boolean verified;
 
+    private Boolean google;
+
     @OneToMany(
             mappedBy = "owner",
             fetch = FetchType.LAZY

@@ -25,6 +25,7 @@ public class SecurityConfiguration {
                 .requestMatchers(
                         "/auth/login",
                         "/auth/register",
+                        "/auth/google",
                         "/auth/verify-email",
                         "/auth/forgot-password",
                         "/auth/reset-password"

@@ -10,9 +10,6 @@ import lombok.Data;
 @Data
 @FieldMatch(first = "password", second = "confirmPassword", message = "Passwords must match")
 public class UpdateUserRequest {
-    @NotNull(message = "Email must not be empty")
-    @Email(message = "Email must be valid")
-    private String email;
     @NotNull(message = "Username must not be empty")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     private String username;

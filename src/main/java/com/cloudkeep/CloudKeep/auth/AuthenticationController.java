@@ -1,9 +1,6 @@
 package com.cloudkeep.CloudKeep.auth;
 
-import com.cloudkeep.CloudKeep.auth.requests.ForgotPasswordRequest;
-import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
-import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
-import com.cloudkeep.CloudKeep.auth.requests.ResetPasswordRequest;
+import com.cloudkeep.CloudKeep.auth.requests.*;
 import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
 import com.cloudkeep.CloudKeep.utils.responses.BasicResponse;
 import com.cloudkeep.CloudKeep.verification.requests.VerificationRequest;
@@ -25,6 +22,12 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) throws MailjetException {
         AuthenticationResponse response = service.register(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterGoogleRequest request) {
+        AuthenticationResponse response = service.authGoogle(request);
         return ResponseEntity.ok(response);
     }
 

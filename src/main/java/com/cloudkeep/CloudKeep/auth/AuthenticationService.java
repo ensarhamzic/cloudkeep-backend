@@ -1,6 +1,7 @@
 package com.cloudkeep.CloudKeep.auth;
 
 import com.cloudkeep.CloudKeep.auth.requests.LoginRequest;
+import com.cloudkeep.CloudKeep.auth.requests.RegisterGoogleRequest;
 import com.cloudkeep.CloudKeep.auth.requests.RegisterRequest;
 import com.cloudkeep.CloudKeep.auth.requests.ResetPasswordRequest;
 import com.cloudkeep.CloudKeep.auth.responses.AuthenticationResponse;
@@ -54,6 +55,8 @@ public class AuthenticationService {
     @Value("${mailjet.apisecret}")
     private String mailjetApiSecret;
     public AuthenticationResponse register(RegisterRequest request) throws MailjetException {
+        request.setUsername(request.getUsername().replaceAll("\\s+",""));
+        request.setUsername(request.getUsername().toLowerCase());
         if(userRepository.findByUsername(request.getUsername()).isPresent()){
             throw new IllegalStateException("Username is already taken");
         } else if(userRepository.findByEmail(request.getEmail()).isPresent()){
@@ -61,7 +64,7 @@ public class AuthenticationService {
         }
         var user = User.builder()
                 .email(request.getEmail())
-                .username(request.getUsername())
+                .username(request.getUsername().toLowerCase())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -70,6 +73,47 @@ public class AuthenticationService {
         userRepository.save(user);
 
         sendVerificationEmail(user);
+
+        var jwtToken = jwtService.generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .user(userDTOMapper.apply(user))
+                .build();
+    }
+
+    public AuthenticationResponse authGoogle(RegisterGoogleRequest request) {
+        var existingUser = userRepository.findByEmailAndGoogleTrue(request.getEmail());
+        if(existingUser != null) {
+            var jwtToken = jwtService.generateToken(existingUser);
+            return AuthenticationResponse.builder()
+                    .token(jwtToken)
+                    .user(userDTOMapper.apply(existingUser))
+                    .build();
+        }
+
+        var newUsername = request.getUsername().toLowerCase();
+        newUsername = newUsername.replaceAll("\\s+","");
+        while(userRepository.findByUsername(newUsername).isPresent())
+            newUsername = request.getUsername() + new SecureRandom().nextInt(1000);
+
+        if(userRepository.findByEmailAndGoogleIsNullOrGoogleFalse(request.getEmail()) != null)
+            throw new IllegalStateException("Email is already taken");
+
+        var userBuilder = User.builder()
+                .email(request.getEmail())
+                .username(newUsername)
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .password("null")
+                .verified(true)
+                .google(true);
+
+        if(request.getProfilePicture() != null)
+            userBuilder.profilePicture(request.getProfilePicture());
+
+        var user = userBuilder.build();
+        userRepository.save(user);
 
         var jwtToken = jwtService.generateToken(user);
 

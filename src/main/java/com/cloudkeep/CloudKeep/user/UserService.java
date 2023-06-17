@@ -22,6 +22,7 @@ public class UserService {
 
     public SearchUsersResponse searchUsers(String token, String query) {
         User user = jwtService.getUserFromToken(token);
+        query = query.toLowerCase();
         var foundUsers = userRepository.findFirst3ByUsernameContaining(query);
         foundUsers.removeIf(u -> u.getId().equals(user.getId()));
         return SearchUsersResponse.builder()
@@ -30,7 +31,7 @@ public class UserService {
     }
 
     public UpdateUserResponse updateUser(String token, UpdateUserRequest request) {
-        Boolean shouldLogout = false;
+        boolean shouldLogout = false;
         User user = jwtService.getUserFromToken(token);
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -42,14 +43,6 @@ public class UserService {
             if(userRepository.findByUsername(request.getUsername()).isPresent())
                 throw new IllegalStateException("Username already taken");
             user.setUsername(request.getUsername());
-            shouldLogout = true;
-        }
-
-        if(!request.getEmail().equals(user.getEmail())) {
-            if(userRepository.findByEmail(request.getEmail()).isPresent())
-                throw new IllegalStateException("Email already taken");
-            user.setVerified(false);
-            user.setEmail(request.getEmail());
             shouldLogout = true;
         }
 
