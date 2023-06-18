@@ -15,7 +15,8 @@ public class UserDTOMapper implements Function<User, UserDTO> {
                 user.getEmail(),
                 user.getUsername(),
                 user.getProfilePicture(),
-                user.getVerified()
+                user.getVerified(),
+                user.getGoogle()
         );
     }
 }

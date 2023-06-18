@@ -7,6 +7,7 @@ public record UserDTO(
         String email,
         String username,
         String profilePicture,
-        Boolean verified
+        Boolean verified,
+        Boolean google
 ) {
 }
